@@ -1,0 +1,61 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_thread_foreach_unlocked_filter_by_cpu, Incoming, Outgoing
+
+### Function k_thread_foreach_unlocked_filter_by_cpu
+Signature: void k_thread_foreach_unlocked_filter_by_cpu ( unsigned int cpu, k_thread_user_cb_t user_cb, void * user_data );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- cpu: unsigned int — The filtered cpu number
+- user_cb: k_thread_user_cb_t — Pointer to the user callback function.
+- user_data: void * — Pointer to user data.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of kernel/include/zephyr/kernel_structs.h:_current:_thread_base(0) (rel:in:kernel/include/zephyr/kernel_structs.h:_current:_thread_base(0)#c0) :: incoming: k_mbox_get, k_mem_slab_alloc, k_sched_lock, k_sched_unlock, k_thread_user_mode_enter, put_msg_in_queue, z_impl_k_msgq_get, z_impl_k_mutex_lock, z_impl_k_pipe_read, z_impl_k_queue_get, z_impl_k_stack_pop, z_impl_k_thread_priority_set, z_sched_wait, z_spin_unlock_valid
+- Outgoing of z_time_slice (rel:out:z_time_slice#c0) :: outgoing: <operator>.addressOf, <operator>.assignment, <operator>.fieldAccess, <operator>.indirectFieldAccess, <operator>.indirectIndexAccess, <operator>.logicalAnd, <operator>.logicalNot, k_spin_lock, k_spin_unlock, kernel/include/zephyr/kernel_structs.h:_current:_cpu(0), kernel/include/zephyr/kernel_structs.h:_curren…
+- Incoming of kernel/include/zephyr/kernel_structs.h:_current:_cpu(0) (rel:in:kernel/include/zephyr/kernel_structs.h:_current:_cpu(0)#c0) :: incoming: idle, k_can_yield, k_mbox_get, k_mbox_put, k_sched_time_slice_set, k_thread_user_mode_enter, k_work_queue_run, mbox_message_put, move_thread_to_end_of_prio_q, need_swap, queue_submit_locked, should_queue_thread, thread_halt_spin, unready_thread, z_fatal_error, z_impl_k_is_preempt_thread, z_impl_k_mutex_lock, …
+- Outgoing of z_impl_k_thread_suspend (rel:out:z_impl_k_thread_suspend#c0) :: outgoing: <operator>.addressOf, <operator>.assignment, <operator>.equals, <operator>.fieldAccess, <operator>.indirectIndexAccess, <operator>.logicalAnd, <operator>.logicalNot, arch_is_in_isr, dequeue_thread, k_spin_lock, k_spin_unlock, kernel/include/stdbool.h:false:int(0), kernel/include/zephyr/kernel_structs.h:_curre…
+- Incoming of kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_FUNC:ANY(3) (rel:in:kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_FUNC:ANY(3)#c0) :: incoming: add_to_waitq_locked, k_sched_lock, k_sched_unlock, k_thread_user_mode_enter, z_impl_k_yield
+- Incoming of arch_is_in_isr (rel:in:arch_is_in_isr#c0) :: incoming: k_is_in_isr, resched, z_impl_k_is_preempt_thread, z_impl_k_thread_abort, z_impl_k_thread_suspend, z_spin_unlock_valid
+
+Official documentation (full):
+Title: k_thread_foreach_unlocked_filter_by_cpu
+Signature: void k_thread_foreach_unlocked_filter_by_cpu ( unsigned int cpu, k_thread_user_cb_t user_cb, void * user_data );
+Parameters:
+- cpu: unsigned int — The filtered cpu number
+- user_cb: k_thread_user_cb_t — Pointer to the user callback function.
+- user_data: void * — Pointer to user data.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

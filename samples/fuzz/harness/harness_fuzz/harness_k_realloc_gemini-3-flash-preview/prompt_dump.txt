@@ -1,0 +1,105 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_realloc, k_free, k_malloc, Incoming, Type
+
+### Function k_realloc
+Signature: void * k_realloc ( void * ptr, size_t size );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- ptr: void * — Original pointer returned from a previous allocation
+- size: size_t — Amount of memory requested (in bytes).
+Return values:
+- : a pointer to a new memory region with the same contents, but a different allocated size. If the new allocation can be expanded in place, the pointer returned will be identical. Otherwise the data will be copies to a new block and the old one will be freed as per sys_heap_free(). If the specified size is smaller than the original, the block will be truncated in place and the remaining memory returned to the heap. If the allocation of a new block fails, then NULL will be returned and the old block will not be freed or modified.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of sys_heap_realloc (rel:in:sys_heap_realloc#c0) :: incoming: k_heap_realloc
+- k_realloc (api:k_realloc:overview#c0) :: API: k_realloc Signature: void * k_realloc ( void * ptr, size_t size );
+- Type k_heap_realloc (type:k_heap_realloc:kernel/kheap.c#c0) :: TYPE type k_heap_realloc kernel/kheap.c k_heap_realloc
+- k_heap_realloc (api:k_heap_realloc:overview#c0) :: API: k_heap_realloc Signature: void * k_heap_realloc ( struct k_heap * h, void * ptr, size_t bytes, k_timeout_t timeout );
+- Function k_heap_realloc (func:k_heap_realloc:kernel/kheap.c#c0) :: FUNC k_heap_realloc void*(k_heap*,void*,size_t,k_timeout_t) file kernel/kheap.c:176-204 
+- Call k_heap_realloc -> sys_heap_realloc (edge:k_heap_realloc->sys_heap_realloc:kernel/kheap.c:188#c0) :: Call: k_heap_realloc -> sys_heap_realloc at kernel/kheap.c:188
+
+Official documentation (full):
+Title: k_realloc
+Signature: void * k_realloc ( void * ptr, size_t size );
+Parameters:
+- ptr: void * — Original pointer returned from a previous allocation
+- size: size_t — Amount of memory requested (in bytes).
+Return values:
+- : a pointer to a new memory region with the same contents, but a different allocated size. If the new allocation can be expanded in place, the pointer returned will be identical. Otherwise the data will be copies to a new block and the old one will be freed as per sys_heap_free(). If the specified size is smaller than the original, the block will be truncated in place and the remaining memory returned to the heap. If the allocation of a new block fails, then NULL will be returned and the old block will not be freed or modified.
+
+### Function k_free
+Signature: void(void*)
+Location: kernel/mempool.c:58-73
+Cyclomatic: -1 Lines: -1
+Includes: string.h, zephyr/kernel.h, zephyr/sys/math_extras.h, zephyr/sys/util.h
+Outgoing calls summary: <operator>.notEquals(), /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:NULL:ANY(0)(), <operator>.cast(), <operator>.assignment(), <operator>.preDecrement(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), k_heap_free(), <operator>.indirection()
+Incoming callers count: 3
+Official docs (summary):
+Parameters:
+- ptr: void * — Pointer to previously allocated memory.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_free
+Signature: void k_free ( void * ptr );
+Parameters:
+- ptr: void * — Pointer to previously allocated memory.
+
+### Function k_malloc
+Signature: void * k_malloc ( size_t size );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- size: size_t — Amount of memory requested (in bytes).
+Return values:
+- : Address of the allocated memory if successful; otherwise NULL.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_malloc
+Signature: void * k_malloc ( size_t size );
+Parameters:
+- size: size_t — Amount of memory requested (in bytes).
+Return values:
+- : Address of the allocated memory if successful; otherwise NULL.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

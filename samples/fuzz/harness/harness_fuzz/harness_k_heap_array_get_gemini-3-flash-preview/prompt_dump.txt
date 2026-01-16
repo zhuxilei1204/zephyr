@@ -1,0 +1,145 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_heap_array_get, k_object_alloc_size, k_heap_init, k_heap_free, Function
+
+### Function k_heap_array_get
+Signature: int(k_heap**)
+Location: kernel/kheap.c:15-24
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: kernel/include/zephyr/sys/iterable_sections.h:STRUCT_SECTION_GET:ANY(3)(), <operator>.assignment(), <operator>.indirection(), <operator>.addressOf(), <operator>.indirectIndexAccess(), kernel/include/zephyr/sys/iterable_sections.h:STRUCT_SECTION_COUNT:ANY(2)(), <operator>.division(), <operator>.subtraction()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- heap: struct k_heap ** — Pointer to location where heap array address is written
+Return values:
+- : the pointer to the start of the static heap array. Static heaps are those declared through one of the K_HEAP_DEFINE macros.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_heap_array_get (api:k_heap_array_get:overview#c0) :: API: k_heap_array_get Signature: int k_heap_array_get ( struct k_heap ** heap );
+- Function Summary k_heap_array_get (funcsum:k_heap_array_get:kernel/kheap.c:15-24#c0) :: FUNC_SUMMARY k_heap_array_get Signature: int(k_heap**) Location: kernel/kheap.c:15-24 Parameters: k_heap** heap Metrics: cyclomatic=-1 nloc=-1
+- k_heap (api:k_heap:overview#c0) :: API: k_heap Signature:
+- Function k_heap_array_get (func:k_heap_array_get:kernel/kheap.c#c0) :: FUNC k_heap_array_get int(k_heap**) file kernel/kheap.c:15-24 
+- Type k_heap_array_get (type:k_heap_array_get:kernel/kheap.c#c0) :: TYPE type k_heap_array_get kernel/kheap.c k_heap_array_get
+- Call k_heap_array_get -> <operator>.assignment (edge:k_heap_array_get-><operator>.assignment:kernel/kheap.c:20#c0) :: Call: k_heap_array_get -> <operator>.assignment at kernel/kheap.c:20
+
+Official documentation (full):
+Title: k_heap_array_get
+Signature: int k_heap_array_get ( struct k_heap ** heap );
+Parameters:
+- heap: struct k_heap ** — Pointer to location where heap array address is written
+Return values:
+- : the pointer to the start of the static heap array. Static heaps are those declared through one of the K_HEAP_DEFINE macros.
+
+### Function k_object_alloc_size
+Signature: void * k_object_alloc_size ( enum k_objects otype, size_t size );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- otype: enum k_objects — Requested kernel object type
+- size: size_t — Requested kernel object size
+Return values:
+- : A pointer to the allocated kernel object, or NULL if memory wasn't available
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_object_alloc_size
+Signature: void * k_object_alloc_size ( enum k_objects otype, size_t size );
+Parameters:
+- otype: enum k_objects — Requested kernel object type
+- size: size_t — Requested kernel object size
+Return values:
+- : A pointer to the allocated kernel object, or NULL if memory wasn't available
+
+### Function k_heap_init
+Signature: void(k_heap*,void*,size_t)
+Location: kernel/kheap.c:26-33
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: z_waitq_init(), <operator>.addressOf(), <operator>.indirectFieldAccess(), <operator>.assignment(), <operator>.cast(), <operator>.arrayInitializer(), sys_heap_init(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_INIT:ANY(3)()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- h: struct k_heap * — Heap struct to initialize
+- mem: void * — Pointer to memory.
+- bytes: size_t — Size of memory region, in bytes
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of sys_heap_init (rel:in:sys_heap_init#c0) :: incoming: k_heap_init
+- k_heap_init (api:k_heap_init:overview#c0) :: API: k_heap_init Signature: void k_heap_init ( struct k_heap * h, void * mem, size_t bytes );
+- k_heap (api:k_heap:overview#c0) :: API: k_heap Signature:
+
+Official documentation (full):
+Title: k_heap_init
+Signature: void k_heap_init ( struct k_heap * h, void * mem, size_t bytes );
+Parameters:
+- h: struct k_heap * — Heap struct to initialize
+- mem: void * — Pointer to memory.
+- bytes: size_t — Size of memory region, in bytes
+
+### Function k_heap_free
+Signature: void(k_heap*,void*)
+Location: kernel/kheap.c:206-218
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: <operator>.assignment(), k_spin_lock(), <operator>.addressOf(), <operator>.indirectFieldAccess(), sys_heap_free(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC:ANY(4)(), <operator>.logicalAnd(), kernel/include/zephyr/sys/util_macro.h:IS_ENABLED:int(1)()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- h: struct k_heap * — Heap to which to return the memory
+- mem: void * — A valid memory block, or NULL
+Return values:
+- : the specified memory block, which must have been returned from k_heap_alloc(), to the heap for use by other callers. Passing a NULL block is legal, and has no effect.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of z_unpend_all (rel:in:z_unpend_all#c0) :: incoming: k_heap_free
+- Type k_heap_free (type:k_heap_free:kernel/kheap.c#c0) :: TYPE type k_heap_free kernel/kheap.c k_heap_free
+- k_heap_free (api:k_heap_free:overview#c0) :: API: k_heap_free Signature: void k_heap_free ( struct k_heap * h, void * mem );
+- k_heap (api:k_heap:overview#c0) :: API: k_heap Signature:
+- Function k_heap_free (func:k_heap_free:kernel/kheap.c#c0) :: FUNC k_heap_free void(k_heap*,void*) file kernel/kheap.c:206-218 
+- Call k_heap_free -> sys_heap_free (edge:k_heap_free->sys_heap_free:kernel/kheap.c:210#c0) :: Call: k_heap_free -> sys_heap_free at kernel/kheap.c:210
+
+Official documentation (full):
+Title: k_heap_free
+Signature: void k_heap_free ( struct k_heap * h, void * mem );
+Parameters:
+- h: struct k_heap * — Heap to which to return the memory
+- mem: void * — A valid memory block, or NULL
+Return values:
+- : the specified memory block, which must have been returned from k_heap_alloc(), to the heap for use by other callers. Passing a NULL block is legal, and has no effect.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

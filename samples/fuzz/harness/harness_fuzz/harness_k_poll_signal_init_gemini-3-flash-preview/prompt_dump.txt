@@ -1,0 +1,145 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_poll_signal_init, k_poll_signal_raise, k_poll_signal_reset, K_POLL_SIGNAL_INITIALIZER, K_POLL_EVENT_INITIALIZER
+
+### Function k_poll_signal_init
+Signature: void k_poll_signal_init ( struct k_poll_signal * sig );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- sig: struct k_poll_signal * — A poll signal.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_poll_signal_init (api:k_poll_signal_init:overview#c0) :: API: k_poll_signal_init Signature: void k_poll_signal_init ( struct k_poll_signal * sig );
+- K_POLL_SIGNAL_INITIALIZER (api:K_POLL_SIGNAL_INITIALIZER:overview#c0) :: API: K_POLL_SIGNAL_INITIALIZER Signature:
+- k_poll_signal_init (api:k_poll_signal_init:parameters#c0) :: API: k_poll_signal_init Section: parameters param sig: struct k_poll_signal * A poll signal.
+- K_POLL_EVENT_INITIALIZER (api:K_POLL_EVENT_INITIALIZER:overview#c0) :: API: K_POLL_EVENT_INITIALIZER Signature:
+- k_poll_signal (api:k_poll_signal:overview#c0) :: API: k_poll_signal Signature:
+- k_poll_signal_reset (api:k_poll_signal_reset:overview#c0) :: API: k_poll_signal_reset Signature: void k_poll_signal_reset ( struct k_poll_signal * sig );
+
+Official documentation (full):
+Title: k_poll_signal_init
+Signature: void k_poll_signal_init ( struct k_poll_signal * sig );
+Parameters:
+- sig: struct k_poll_signal * — A poll signal.
+
+### Function k_poll_signal_raise
+Signature: int k_poll_signal_raise ( struct k_poll_signal * sig, int result );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- sig: struct k_poll_signal * — A poll signal.
+- result: int — The value to store in the result field of the signal.
+Return values:
+- : The signal was delivered successfully.
+- : The polling thread's timeout is in the process of expiring.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_poll_signal_raise
+Signature: int k_poll_signal_raise ( struct k_poll_signal * sig, int result );
+Parameters:
+- sig: struct k_poll_signal * — A poll signal.
+- result: int — The value to store in the result field of the signal.
+Return values:
+- : The signal was delivered successfully.
+- : The polling thread's timeout is in the process of expiring.
+
+### Function k_poll_signal_reset
+Signature: void k_poll_signal_reset ( struct k_poll_signal * sig );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- sig: struct k_poll_signal * — A poll signal object
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_poll_signal_reset
+Signature: void k_poll_signal_reset ( struct k_poll_signal * sig );
+Parameters:
+- sig: struct k_poll_signal * — A poll signal object
+
+### Function K_POLL_SIGNAL_INITIALIZER
+Signature: #define K_POLL_SIGNAL_INITIALIZER ( obj )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_POLL_SIGNAL_INITIALIZER (api:K_POLL_SIGNAL_INITIALIZER:overview#c0) :: API: K_POLL_SIGNAL_INITIALIZER Signature:
+
+Official documentation (full):
+Title: K_POLL_SIGNAL_INITIALIZER
+Definition: #define K_POLL_SIGNAL_INITIALIZER ( obj )
+Includes:
+#include <zephyr/kernel.h>
+Details (truncated):
+{ .poll_events = SYS_DLIST_STATIC_INIT(&obj.poll_events), .signaled = 0, .result = 0, }
+
+### Function K_POLL_EVENT_INITIALIZER
+Signature: #define K_POLL_EVENT_INITIALIZER ( _event_type, _event_mode, _event_obj )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_POLL_EVENT_INITIALIZER (api:K_POLL_EVENT_INITIALIZER:overview#c0) :: API: K_POLL_EVENT_INITIALIZER Signature:
+
+Official documentation (full):
+Title: K_POLL_EVENT_INITIALIZER
+Definition: #define K_POLL_EVENT_INITIALIZER ( _event_type, _event_mode, _event_obj )
+Includes:
+#include <zephyr/kernel.h>
+Details (truncated):
+{ .poller = NULL, .type = _event_type, .state = K_POLL_STATE_NOT_READY, .mode = _event_mode, .unused = 0, { .typed_##_event_type = _event_obj, }, }
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

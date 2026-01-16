@@ -1,0 +1,94 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_fatal_halt, arch_system_halt, k_sys_fatal_error_handler, z_fatal_error, Type
+
+### Function k_fatal_halt
+Signature: void(unsigned int)
+Location: kernel/fatal.c:126-129
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, zephyr/arch/cpu.h, zephyr/debug/coredump.h, zephyr/fatal.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/logging/log.h, zephyr/logging/log_ctrl.h, zephyr/sys/__assert.h
+Outgoing calls summary: arch_system_halt()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- reason: unsigned int — Fatal exception reason code
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Type k_fatal_halt (type:k_fatal_halt:kernel/fatal.c#c0) :: TYPE type k_fatal_halt kernel/fatal.c k_fatal_halt
+- k_fatal_halt (api:k_fatal_halt:overview#c0) :: API: k_fatal_halt Signature: FUNC_NORETURN void k_fatal_halt ( unsigned int reason );
+- Incoming of arch_system_halt (rel:in:arch_system_halt#c0) :: incoming: k_fatal_halt, k_sys_fatal_error_handler
+- Function k_fatal_halt (func:k_fatal_halt:kernel/fatal.c#c0) :: FUNC k_fatal_halt void(unsigned int) file kernel/fatal.c:126-129 
+- Call k_fatal_halt -> arch_system_halt (edge:k_fatal_halt->arch_system_halt:kernel/fatal.c:128#c0) :: Call: k_fatal_halt -> arch_system_halt at kernel/fatal.c:128
+- Call k_sys_fatal_error_handler -> arch_system_halt (edge:k_sys_fatal_error_handler->arch_system_halt:kernel/fatal.c:91#c0) :: Call: k_sys_fatal_error_handler -> arch_system_halt at kernel/fatal.c:91
+
+Official documentation (full):
+Title: k_fatal_halt
+Signature: FUNC_NORETURN void k_fatal_halt ( unsigned int reason );
+Parameters:
+- reason: unsigned int — Fatal exception reason code
+
+### Function arch_system_halt
+Signature: void(unsigned int)
+Location: kernel/fatal.c:21-37
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, zephyr/arch/cpu.h, zephyr/debug/coredump.h, zephyr/fatal.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/logging/log.h, zephyr/logging/log_ctrl.h, zephyr/sys/__assert.h
+Outgoing calls summary: ARG_UNUSED(), <operator>.cast(), arch_irq_lock(), <operator>.assignment(), <operator>.indirection(), kernel/fatal.c:MAGIC_CRASH_ADDR:ANY(0)(), kernel/fatal.c:MAGIC_CRASH_VAL:int(0)()
+Incoming callers count: 2
+
+### Function k_sys_fatal_error_handler
+Signature: void(unsigned int,arch_esf*)
+Location: kernel/fatal.c:84-93
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, zephyr/arch/cpu.h, zephyr/debug/coredump.h, zephyr/fatal.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/logging/log.h, zephyr/logging/log_ctrl.h, zephyr/sys/__assert.h
+Outgoing calls summary: ARG_UNUSED(), kernel/include/zephyr/logging/log.h:LOG_ERR:ANY(1)(), <operator>.cast(), arch_system_halt()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- reason: unsigned int — The reason for the fatal error
+- esf: const struct arch_esf * — Exception context, with details and partial or full register state when the error occurred. May in some cases be NULL.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_sys_fatal_error_handler
+Signature: void k_sys_fatal_error_handler ( unsigned int reason, const struct arch_esf * esf );
+Parameters:
+- reason: unsigned int — The reason for the fatal error
+- esf: const struct arch_esf * — Exception context, with details and partial or full register state when the error occurred. May in some cases be NULL.
+
+### Function z_fatal_error
+Signature: void(unsigned int,arch_esf*)
+Location: kernel/fatal.c:132-229
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, zephyr/arch/cpu.h, zephyr/debug/coredump.h, zephyr/fatal.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/logging/log.h, zephyr/logging/log_ctrl.h, zephyr/sys/__assert.h
+Outgoing calls summary: <operator>.assignment(), arch_irq_lock(), <operator>.conditional(), kernel/include/zephyr/kernel_structs.h:_current:_cpu(0)(), <operator>.fieldAccess(), <operator>.indirectIndexAccess(), /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:NULL:ANY(0)(), <operator>.cast()
+Incoming callers count: 4
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

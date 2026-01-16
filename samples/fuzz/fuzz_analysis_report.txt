@@ -1,0 +1,343 @@
+=== Fuzzing 统计报告 ===
+时间: 2026-01-06 10:44:34
+根目录: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz
+检测到子文件夹数量: 127
+------------------------------------------------------------
+
+1. 有效 Crash 统计: 162 个
+   [1] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.7c4e1087331523ae
+   [2] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.adfc9d6953494d49
+   [3] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.6ed9234e0846b18b
+   [4] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.a8755be2a88399a6
+   [5] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.dd160fc04db23a98
+   [6] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.64fa1e82f6fe284f
+   [7] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.5cd779eeb58a62ed
+   [8] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.4315024a2f257208
+   [9] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.492869069c13984c
+   [10] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.6905133bd28b7249
+   [11] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.b9bb6d3b27610dbe
+   [12] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.2b02d6f6653faacc
+   [13] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.4b1c28c7eb9d9c09
+   [14] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.bf852cf1643f5c2e
+   [15] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.3ed123ce83a0799f
+   [16] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.493039548c3d5aa2
+   [17] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.e5ad47d182d67299
+   [18] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.0ef1fa45f284c622
+   [19] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.0c4aae4321fe8974
+   [20] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.57f1940363598525
+   [21] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.c8db697ae441be21
+   [22] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.befed0c5e9757684
+   [23] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.cb00b5c5fd3dc2ab
+   [24] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.245763dd33c475d9
+   [25] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.f6a855668e8f1564
+   [26] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.47f06983e60ce7aa
+   [27] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.e6b278e493415893
+   [28] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.e98ed73d659ed12e
+   [29] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.2eb7edc61056505e
+   [30] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.dc2f5bcffa631b3a
+   [31] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.e09c736d699dcbe7
+   [32] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.764ed515164ac60f
+   [33] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.849e9f835f5c7282
+   [34] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.86b7426a171fac6a
+   [35] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.596507e141fd02b6
+   [36] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.f92d4e0e6515c90f
+   [37] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.96c37996e57847c1
+   [38] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.6fc066d8a8027aeb
+   [39] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.9c446cecdaa44680
+   [40] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.5a39492c0d3aa7c5
+   [41] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.26b4ab515fe5c1df
+   [42] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.145ba221c7c4fc2e
+   [43] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.38eca739bded52c9
+   [44] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.70b76e5d8f113e14
+   [45] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.87fc4b0193bcfdb6
+   [46] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.77071a7d4aae582d
+   [47] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.85824e6d4baf3375
+   [48] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.2edd66ec7d54ac0c
+   [49] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.eda161448e498751
+   [50] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.f741354779ec3816
+   [51] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.001d24cc2011981d
+   [52] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.61e19eb814dd971c
+   [53] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.2620cf25016da79c
+   [54] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.5789ab4e7b980e09
+   [55] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.695161e726d6c9a2
+   [56] API: harness_k_heap_calloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_calloc_gemini-3-flash-preview/crashes/.321e6e95b1f87d8f
+   [57] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.7ae0eb86df272113
+   [58] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.1c2703f67c2e3827
+   [59] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.ed5d1372762df773
+   [60] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.6a2c10443130d544
+   [61] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.798c5216dfb024ad
+   [62] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.4ba1b897d3327611
+   [63] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.c39f8fa4d22a0806
+   [64] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.24ca46e658a30a0d
+   [65] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.37e0ad7952bd4e06
+   [66] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.6cefa1931a8fbeca
+   [67] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.b7404bb315d05e56
+   [68] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.07694a4ce8983153
+   [69] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.9e391e1708aab592
+   [70] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.ad98b40343143030
+   [71] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.2cec9b0aea068ca3
+   [72] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.6ba45b67ca35dcd5
+   [73] API: harness_k_queue_cancel_wait_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_queue_cancel_wait_gemini-3-flash-preview/crashes/.0248b6f7f81db0dc
+   [74] API: harness_k_poll_signal_raise_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_poll_signal_raise_gemini-3-flash-preview/crashes/.5a39492c0d3aa7c5
+   [75] API: harness_irq_connect_dynamic_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_irq_connect_dynamic_gemini-3-flash-preview/crashes/.5a39492c0d3aa7c5
+   [76] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.0b6f91e96bd96e00
+   [77] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.83159a36ae296e5a
+   [78] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.6ca01fb39713f886
+   [79] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.7ef88259a1bcb7b3
+   [80] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.38996a1a6af97dfd
+   [81] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.08841f160c569ac0
+   [82] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.4103292e57823b98
+   [83] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.3e3aabe8ea94bd08
+   [84] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.10c5644cbeff8203
+   [85] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.dcc3d0e3445df02f
+   [86] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.b84624080efbddd9
+   [87] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.fdb3e1e6fb01b468
+   [88] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.ada5539ff4d7d1ec
+   [89] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.4a63b6e79cba8f9b
+   [90] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.9bdcf39a9302e66c
+   [91] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.6085c6922f9134c9
+   [92] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.dba071ac3a5b3efd
+   [93] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.634431dc02a26db9
+   [94] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.1c141fec2e53c305
+   [95] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.ac2fc06ca90a5de2
+   [96] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.2894913f715c1e6f
+   [97] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.65d7fead77532b2a
+   [98] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.8609808a0ef9f593
+   [99] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.4633baea76433a97
+   [100] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.adea27be274f5ebe
+   [101] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.54f127c6b356c8ff
+   [102] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.5933ceeb7ebf5660
+   [103] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.955b846b070f8f5b
+   [104] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.e871ebb9774ca827
+   [105] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.324b0b448d0a211c
+   [106] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.3e0794e14ea5789c
+   [107] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.f63f0435ed2c82c9
+   [108] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.6d0b8c92ec494597
+   [109] API: harness_k_mem_slab_alloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_mem_slab_alloc_gemini-3-flash-preview/crashes/.1a93643fa5e7a6ac
+   [110] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.e48e34143cbec0c8
+   [111] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.8352db84a30db572
+   [112] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.1945bc6d93278d07
+   [113] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.bcd22dd06430fc9f
+   [114] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.c2da486f3fa88759
+   [115] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.46d656f718aaba34
+   [116] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.bcb42666b3663901
+   [117] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.e40fb127928dc64d
+   [118] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.ae1542a61ccb0a33
+   [119] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.7491dfa76b368976
+   [120] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.bfde662d51235d24
+   [121] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.5a39492c0d3aa7c5
+   [122] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.d731429942c2b576
+   [123] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.e90bad0e7203af37
+   [124] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.9455a752ecdfdb05
+   [125] API: harness_k_heap_free_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_free_gemini-3-flash-preview/crashes/.a5af869d86458f73
+   [126] API: harness_k_poll_signal_init_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_poll_signal_init_gemini-3-flash-preview/crashes/.5a39492c0d3aa7c5
+   [127] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.2e1f234e6674b94f
+   [128] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.df4939a6174d23cf
+   [129] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.941cd185b1f25355
+   [130] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.a2c856cd87e514b3
+   [131] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.bf3870c0e98c0d29
+   [132] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.ad3d20e738658533
+   [133] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.88740bd47a16d532
+   [134] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.cce729e7b0b211be
+   [135] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.c9a017eaef6691d5
+   [136] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.7ff9f87aebb351e3
+   [137] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.cadfd5fd4b34fba5
+   [138] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.2c5341897685828b
+   [139] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.ff22153a3ebf24bd
+   [140] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.2b77c55c844618e6
+   [141] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.2094e033b490fa83
+   [142] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.cbbed34e3508ce26
+   [143] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.939b28a5fa61818d
+   [144] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.8530eb7308dd61a2
+   [145] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.4639247d2eeba19d
+   [146] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.601d9399f14795d6
+   [147] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.dff6839ba1375e5a
+   [148] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.a573216fb8cc21d6
+   [149] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.d465f5626e3339db
+   [150] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.e708fbdd7d39a066
+   [151] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.5f8f6b84bcc9f911
+   [152] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.5a39492c0d3aa7c5
+   [153] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.291c130c8582be1d
+   [154] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.de8ecda59f64d9af
+   [155] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.44a7bb324c24ac27
+   [156] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.a4389436576d49a7
+   [157] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.67f2bab844e1ba74
+   [158] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.c69bae109d96b843
+   [159] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.e6e3df80615250ed
+   [160] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.9d17493a50043854
+   [161] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.44bf6ff11319552e
+   [162] API: harness_k_heap_realloc_gemini-3-flash-preview
+        Path: /home/zwz/zephyr/samples/fuzz/harness/harness_fuzz/harness_k_heap_realloc_gemini-3-flash-preview/crashes/.55f32b9cbf02fad7
+
+------------------------------
+2. 覆盖率统计 (Edges)
+   - 系统覆盖边总和: 41868
+   - 平均 Harness 边覆盖率: 329.67
+
+------------------------------
+3. 生成时间统计
+   - 总生成耗时: 31195.69 秒
+   - 平均生成时间: 245.64 秒 (统计文件数: 127)
+
+============================================================

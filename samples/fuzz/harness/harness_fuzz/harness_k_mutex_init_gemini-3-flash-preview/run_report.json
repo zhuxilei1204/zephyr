@@ -1,0 +1,19 @@
+{
+  "overall_status": "PASS",
+  "stage": "run",
+  "classification": "ok",
+  "subtype": null,
+  "details": {
+    "run": {
+      "status": "PASS",
+      "stage": "run",
+      "command": "/home/zwz/zephyr-venv/bin/west build -t run",
+      "returncode": -9,
+      "timeout": false,
+      "marker_hit": true,
+      "stdout_tail": "orig prio: 0\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000ea8, count: 2, orig prio: 0\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000610 lock_count: 1\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000610: 0 (prio: -1000)\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000610, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000ea8, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000ea8, count: 2, orig prio: 0\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000610 lock_count: 1\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000610: 0 (prio: -1000)\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000610, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000ea8, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000ea8, count: 2, orig prio: 0\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000610 lock_count: 1\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000610: 0 (prio: -1000)\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000610, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000ea8, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000c10 took mutex 0x20000ea8, count: 2, orig prio: 0\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000610 lock_count: 1\u001b[0m\r\n[00:00:00.010,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000610: 0 (prio: -1000)\u001b[0m\r\n[TEST_CASE_COMPLETED]\r",
+      "stderr_tail": "qemu-system-arm: warning: nic lan9118.0 has no peer\n",
+      "log_path": "/home/zwz/rtos_fuzz_agent/src/generated_tests/fuzz/20260103_001749_k_mutex_init_gemini-3-flash-preview/run.log"
+    }
+  }
+}

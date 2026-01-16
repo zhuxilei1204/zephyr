@@ -1,0 +1,220 @@
+/*
+ * Zephyr fuzz single test (mps2/an385)
+ * 文件: k_msgq_timer_fuzz
+ * 生成时间: 2026-01-04 17:46:07
+ * 目标RTOS: Zephyr
+ * 项目路径: /home/zwz/zephyr/samples/fuzz
+ * API类别: kernel
+ */
+
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <string.h>
+#include <stdint.h>
+#include <stddef.h>
+
+// LibAFL integration: deterministic global input buffer
+#define MAX_FUZZ_INPUT_SIZE 1024
+__attribute__((used, visibility("default"))) unsigned char FUZZ_INPUT[MAX_FUZZ_INPUT_SIZE] = {
+    0x46, 0x55, 0x5a, 0x5a, 0x01, 0x23, 0x45, 0x67,
+    0x89, 0xab, 0xcd, 0xef, 0x11, 0x22, 0x33, 0x44,
+    0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc,
+    0xdd, 0xee, 0xff, 0x00, 0x13, 0x37, 0x42, 0x24,
+    0x5a, 0xa5, 0xc3, 0x3c, 0xde, 0xed, 0xbe, 0xef,
+    0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80,
+    0x90, 0xa0, 0xb0, 0xc0, 0xd0, 0xe0, 0xf0, 0x0f,
+    0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f, 0x8f
+};
+
+int __attribute__((noinline, used, visibility("default"))) BREAKPOINT(void)
+{
+    k_yield();
+    __asm volatile("nop");
+    return 0;
+}
+
+typedef struct {
+    const unsigned char* data;
+    size_t size;
+    size_t off;
+} FR_Reader;
+
+static inline FR_Reader FR_init(const unsigned char* buf, size_t n)
+{
+    FR_Reader r = { buf, n, 0 };
+    return r;
+}
+
+static inline size_t FR_remaining(FR_Reader* r)
+{
+    return (r->off < r->size) ? (r->size - r->off) : 0;
+}
+
+static inline uint8_t FR_next_u8(FR_Reader* r)
+{
+    if (r->off + 1 <= r->size) {
+        return r->data[r->off++];
+    }
+    return 0;
+}
+
+static inline uint16_t FR_next_u16(FR_Reader* r)
+{
+    uint16_t lo = FR_next_u8(r);
+    uint16_t hi = FR_next_u8(r);
+    return (uint16_t)((hi << 8) | lo);
+}
+
+static inline uint32_t FR_next_u32(FR_Reader* r)
+{
+    uint32_t lo = FR_next_u16(r);
+    uint32_t hi = FR_next_u16(r);
+    return (hi << 16) | lo;
+}
+
+static inline int32_t FR_next_s32(FR_Reader* r)
+{
+    return (int32_t)FR_next_u32(r);
+}
+
+static inline uint32_t FR_next_range(FR_Reader* r, uint32_t min_v, uint32_t max_v)
+{
+    if (max_v <= min_v) {
+        return min_v;
+    }
+    uint32_t span = max_v - min_v + 1u;
+    return min_v + (FR_next_u32(r) % span);
+}
+
+static inline size_t FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n)
+{
+    size_t rem = FR_remaining(r);
+    if (n > rem) {
+        n = rem;
+    }
+    if (n && out) {
+        memcpy(out, r->data + r->off, n);
+        r->off += n;
+    }
+    return n;
+}
+
+static inline const char* FR_next_string(FR_Reader* r, size_t max_len)
+{
+    static char s_buf[64];
+    size_t cap = sizeof(s_buf) - 1;
+    size_t want = max_len;
+    if (want == 0) {
+        want = 1;
+    }
+    if (want > cap) {
+        want = cap;
+    }
+
+    size_t rem = FR_remaining(r);
+    if (want > rem) {
+        want = rem;
+    }
+
+    for (size_t i = 0; i < want; ++i) {
+        uint8_t b = FR_next_u8(r);
+        uint8_t sel = (uint8_t)(b % 37u);
+        if (sel < 26u) {
+            s_buf[i] = (char)('a' + sel);
+        } else if (sel < 36u) {
+            s_buf[i] = (char)('0' + (sel - 26u));
+        } else {
+            s_buf[i] = '_';
+        }
+    }
+
+    s_buf[want] = '\0';
+    return s_buf;
+}
+
+static struct k_msgq f_msgq __aligned(8);
+static char f_buffer[64] __aligned(8);
+static struct k_timer f_timer __aligned(8);
+static uint32_t expiry_count = 0;
+
+void f_expiry_fn(struct k_timer *timer) {
+    expiry_count++;
+}
+
+void f_stop_fn(struct k_timer *timer) {
+    expiry_count = 0;
+}
+
+static void test_once(void)
+{
+    FR_Reader fr = FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE);
+
+    unsigned char baseline[16] = {0};
+    (void)FR_next_bytes(&fr, baseline, sizeof(baseline));
+
+    unsigned int iterations = (unsigned int)FR_next_range(&fr, 0, 10);
+
+    /* Initialize objects once outside the loop to prevent kernel list corruption */
+    FR_Reader init_reader = FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE);
+    uint32_t m_size = (uint32_t)FR_next_range(&init_reader, 1, 8);
+    /* Use a safe m_max to ensure buffer alignment padding doesn't overflow f_buffer[64] */
+    uint32_t m_max = 8;
+    k_msgq_init(&f_msgq, f_buffer, m_size, m_max);
+    k_timer_init(&f_timer, f_expiry_fn, f_stop_fn);
+
+    for (unsigned int i = 0; i < iterations; ++i) {
+        /* Use the main reader to ensure progress through FUZZ_INPUT and avoid timeout */
+        for (int j = 0; j < 16 && FR_remaining(&fr) > 0; j++) {
+            uint32_t action = FR_next_range(&fr, 0, 4);
+    
+            switch (action) {
+                case 0: {
+                    unsigned char data[8] = {0};
+                    FR_next_bytes(&fr, data, m_size);
+                    /* Use K_NO_WAIT to avoid deadlock in single-threaded env */
+                    (void)k_msgq_put(&f_msgq, data, K_NO_WAIT);
+                    break;
+                }
+                case 1: {
+                    unsigned char out[8];
+                    (void)k_msgq_get(&f_msgq, out, K_NO_WAIT);
+                    break;
+                }
+                case 2: {
+                    uint32_t duration = FR_next_range(&fr, 1, 50);
+                    uint32_t period = FR_next_range(&fr, 0, 20);
+                    k_timer_start(&f_timer, K_MSEC(duration), K_MSEC(period));
+                    break;
+                }
+                case 3: {
+                    k_timer_stop(&f_timer);
+                    break;
+                }
+                case 4: {
+                    k_msgq_purge(&f_msgq);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        /* Cleanup per iteration */
+        k_timer_stop(&f_timer);
+        k_msgq_purge(&f_msgq);
+    }
+
+    printk("[TEST_CASE_COMPLETED]\n");
+}
+
+int main(void)
+{
+    test_once();
+
+    /* Use busy wait instead of msleep to ensure no context switch issues */
+    k_busy_wait(1000);
+
+    BREAKPOINT();
+
+    return 0;
+}

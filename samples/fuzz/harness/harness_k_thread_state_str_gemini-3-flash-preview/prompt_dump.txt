@@ -1,0 +1,97 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_thread_state_str, rtc_alarm_get_supported_fields, z_impl_sent_register_callback, DT_N_S_cpus_FOREACH_CHILD_STATUS_OKAY_SEP, <operator>.assignment
+
+### Function k_thread_state_str
+Signature: char*(k_tid_t,char*,size_t)
+Location: kernel/thread.c:226-281
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, kswap.h, kthread.h, stdbool.h, string.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/llext/symbol.h, zephyr/logging/log.h, zephyr/random/random.h, zephyr/spinlock.h, zephyr/sys/atomic.h, zephyr/sys/check.h, zephyr/sys/iterable_sections.h, zephyr/sys/math_extras.h, zephyr/sys_clock.h, zephyr/syscalls/k_is_preempt_thread_mrsh.c, zephyr/syscalls/k_thread_create_mrsh.c, zephyr/syscalls/k_thread_custom_data_get_mrsh.c, zephyr/syscalls/k_thread_custom_data_set_mrsh.c, zephyr/syscalls/k_thread_name_copy_mrsh.c, zephyr/syscalls/k_thread_name_set_mrsh.c, zephyr/syscalls/k_thread_priority_get_mrsh.c, zephyr/syscalls/k_thread_stack_space_get_mrsh.c, zephyr/syscalls/k_thread_timeout_expires_ticks_mrsh.c, zephyr/syscalls/k_thread_timeout_remaining_ticks_mrsh.c, zephyr/tracing/tracing.h
+Outgoing calls summary: <operator>.assignment(), <operator>.fieldAccess(), <operator>.indirectFieldAccess(), <operator>.arrayInitializer(), <operator>.shiftLeft(), <operator>.subtraction(), <operator>.sizeOf(), <operator>.logicalOr()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- thread_id: k_tid_t — Thread ID
+- buf: char * — Buffer into which to copy state strings
+- buf_size: size_t — Size of the buffer
+Return values:
+- : to buf if data was copied, else a pointer to "".
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of copy_bytes (rel:in:copy_bytes#c0) :: incoming: k_thread_state_str
+- Type k_thread_state_str (type:k_thread_state_str:kernel/thread.c#c0) :: TYPE type k_thread_state_str kernel/thread.c k_thread_state_str
+- k_thread_state_str (api:k_thread_state_str:overview#c0) :: API: k_thread_state_str Signature: const char * k_thread_state_str ( k_tid_t thread_id, char * buf, size_t buf_size );
+- Call k_thread_state_str -> <operator>.cast (edge:k_thread_state_str-><operator>.cast:kernel/thread.c:280#c0) :: Call: k_thread_state_str -> <operator>.cast at kernel/thread.c:280
+- Call k_thread_state_str -> <operator>.cast (edge:k_thread_state_str-><operator>.cast:kernel/thread.c:248#c0) :: Call: k_thread_state_str -> <operator>.cast at kernel/thread.c:248
+- Call k_thread_state_str -> copy_bytes (edge:k_thread_state_str->copy_bytes:kernel/thread.c:267#c0) :: Call: k_thread_state_str -> copy_bytes at kernel/thread.c:267
+
+Official documentation (full):
+Title: k_thread_state_str
+Signature: const char * k_thread_state_str ( k_tid_t thread_id, char * buf, size_t buf_size );
+Parameters:
+- thread_id: k_tid_t — Thread ID
+- buf: char * — Buffer into which to copy state strings
+- buf_size: size_t — Size of the buffer
+Return values:
+- : to buf if data was copied, else a pointer to "".
+
+### Function rtc_alarm_get_supported_fields
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function z_impl_sent_register_callback
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function DT_N_S_cpus_FOREACH_CHILD_STATUS_OKAY_SEP
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function <operator>.assignment
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

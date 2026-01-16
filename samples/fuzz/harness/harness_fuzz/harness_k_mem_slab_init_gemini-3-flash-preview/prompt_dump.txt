@@ -1,0 +1,167 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_mem_slab_init, k_thread_stack_free, create_free_list, k_mem_slab_alloc, k_mem_slab_free
+
+### Function k_mem_slab_init
+Signature: int(k_mem_slab*,void*,size_t,uint32_t)
+Location: kernel/mem_slab.c:172-206
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, string.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/linker/sections.h, zephyr/sys/check.h, zephyr/sys/dlist.h, zephyr/sys/iterable_sections.h, zephyr/toolchain.h
+Outgoing calls summary: <operator>.assignment(), <operator>.fieldAccess(), <operator>.indirectFieldAccess(), <operator>.cast(), <operator>.arrayInitializer(), create_free_list(), <operator>.lessThan(), z_waitq_init()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- slab: struct k_mem_slab * — Address of the memory slab.
+- buffer: void * — Pointer to buffer used for the memory blocks.
+- block_size: size_t — Size of each memory block (in bytes).
+- num_blocks: uint32_t — Number of memory blocks.
+Return values:
+- : on success
+- : invalid data supplied
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Call k_mem_slab_init -> <operator>.assignment (edge:k_mem_slab_init-><operator>.assignment:kernel/mem_slab.c:187#c0) :: Call: k_mem_slab_init -> <operator>.assignment at kernel/mem_slab.c:187
+- Function k_mem_slab_init (func:k_mem_slab_init:kernel/mem_slab.c#c0) :: FUNC k_mem_slab_init int(k_mem_slab*,void*,size_t,uint32_t) file kernel/mem_slab.c:172-206 
+- Call k_mem_slab_init -> <operator>.assignment (edge:k_mem_slab_init-><operator>.assignment:kernel/mem_slab.c:180#c0) :: Call: k_mem_slab_init -> <operator>.assignment at kernel/mem_slab.c:180
+- k_mem_slab_init (api:k_mem_slab_init:overview#c0) :: API: k_mem_slab_init Signature: int k_mem_slab_init ( struct k_mem_slab * slab, void * buffer, size_t block_size, uint32_t num_blocks );
+- Call k_mem_slab_init -> <operator>.assignment (edge:k_mem_slab_init-><operator>.assignment:kernel/mem_slab.c:177#c0) :: Call: k_mem_slab_init -> <operator>.assignment at kernel/mem_slab.c:177
+- Call k_mem_slab_init -> <operator>.assignment (edge:k_mem_slab_init-><operator>.assignment:kernel/mem_slab.c:179#c0) :: Call: k_mem_slab_init -> <operator>.assignment at kernel/mem_slab.c:179
+
+Official documentation (full):
+Title: k_mem_slab_init
+Signature: int k_mem_slab_init ( struct k_mem_slab * slab, void * buffer, size_t block_size, uint32_t num_blocks );
+Parameters:
+- slab: struct k_mem_slab * — Address of the memory slab.
+- buffer: void * — Pointer to buffer used for the memory blocks.
+- block_size: size_t — Size of each memory block (in bytes).
+- num_blocks: uint32_t — Number of memory blocks.
+Return values:
+- : on success
+- : invalid data supplied
+
+### Function k_thread_stack_free
+Signature: int k_thread_stack_free ( k_thread_stack_t * stack );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- stack: k_thread_stack_t * — Pointer to the thread stack.
+Return values:
+- : on success.
+- : if the thread stack is in use.
+- : if stack is invalid.
+- : if dynamic thread stack allocation is disabled
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_thread_stack_free
+Signature: int k_thread_stack_free ( k_thread_stack_t * stack );
+Parameters:
+- stack: k_thread_stack_t * — Pointer to the thread stack.
+Return values:
+- : on success.
+- : if the thread stack is in use.
+- : if stack is invalid.
+- : if dynamic thread stack allocation is disabled
+
+### Function create_free_list
+Signature: int(k_mem_slab*)
+Location: kernel/mem_slab.c:104-124
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, string.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/linker/sections.h, zephyr/sys/check.h, zephyr/sys/dlist.h, zephyr/sys/iterable_sections.h, zephyr/toolchain.h
+Outgoing calls summary: <operator>.notEquals(), <operator>.and(), <operator>.or(), <operator>.fieldAccess(), <operator>.indirectFieldAccess(), <operator>.cast(), <operator>.subtraction(), <operator>.sizeOf()
+Incoming callers count: 2
+Reference snippets:
+- Function create_free_list (func:create_free_list:kernel/mem_slab.c#c0) :: FUNC create_free_list int(k_mem_slab*) file kernel/mem_slab.c:104-124 
+- Type create_free_list (type:create_free_list:kernel/mem_slab.c#c0) :: TYPE type create_free_list kernel/mem_slab.c create_free_list
+- Call k_mem_slab_init -> create_free_list (edge:k_mem_slab_init->create_free_list:kernel/mem_slab.c:187#c0) :: Call: k_mem_slab_init -> create_free_list at kernel/mem_slab.c:187
+- Function Summary create_free_list (funcsum:create_free_list:kernel/mem_slab.c:104-124#c0) :: FUNC_SUMMARY create_free_list Signature: int(k_mem_slab*) Location: kernel/mem_slab.c:104-124 Parameters: k_mem_slab* slab Metrics: cyclomatic=-1 nloc=-1
+- Call create_free_list -> <operator>.assignment (edge:create_free_list-><operator>.assignment:kernel/mem_slab.c:119#c0) :: Call: create_free_list -> <operator>.assignment at kernel/mem_slab.c:119
+- Call create_free_list -> <operator>.assignment (edge:create_free_list-><operator>.assignment:kernel/mem_slab.c:118#c0) :: Call: create_free_list -> <operator>.assignment at kernel/mem_slab.c:118
+
+### Function k_mem_slab_alloc
+Signature: int(k_mem_slab*,void**,k_timeout_t)
+Location: kernel/mem_slab.c:222-269
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, string.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/linker/sections.h, zephyr/sys/check.h, zephyr/sys/dlist.h, zephyr/sys/iterable_sections.h, zephyr/toolchain.h
+Outgoing calls summary: <operator>.assignment(), k_spin_lock(), <operator>.addressOf(), <operator>.indirectFieldAccess(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.notEquals(), /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:NULL:ANY(0)(), <operator>.cast()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- slab: struct k_mem_slab * — Address of the memory slab.
+- mem: void ** — Pointer to block address area.
+- timeout: k_timeout_t — Waiting period to wait for operation to complete. Use K_NO_WAIT to return without waiting, or K_FOREVER to wait as long as necessary.
+Return values:
+- : Memory allocated. The block address area pointed at by mem is set to the starting address of the memory block.
+- : Returned without waiting.
+- : Waiting period timed out.
+- : Invalid data supplied
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_mem_slab_alloc
+Signature: int k_mem_slab_alloc ( struct k_mem_slab * slab, void ** mem, k_timeout_t timeout );
+Parameters:
+- slab: struct k_mem_slab * — Address of the memory slab.
+- mem: void ** — Pointer to block address area.
+- timeout: k_timeout_t — Waiting period to wait for operation to complete. Use K_NO_WAIT to return without waiting, or K_FOREVER to wait as long as necessary.
+Return values:
+- : Memory allocated. The block address area pointed at by mem is set to the starting address of the memory block.
+- : Returned without waiting.
+- : Waiting period timed out.
+- : Invalid data supplied
+
+### Function k_mem_slab_free
+Signature: void(k_mem_slab*,void*)
+Location: kernel/mem_slab.c:271-301
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, string.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/linker/sections.h, zephyr/sys/check.h, zephyr/sys/dlist.h, zephyr/sys/iterable_sections.h, zephyr/toolchain.h
+Outgoing calls summary: <operator>.logicalNot(), slab_ptr_is_good(), kernel/include/zephyr/sys/__assert.h:__ASSERT:ANY(3)(), kernel/include/zephyr/kernel.h:k_panic:ANY(0)(), z_fatal_error(), <operator>.cast(), <operator>.assignment(), k_spin_lock()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- slab: struct k_mem_slab * — Address of the memory slab.
+- mem: void * — Pointer to the memory block (as returned by k_mem_slab_alloc()).
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_mem_slab_free
+Signature: void k_mem_slab_free ( struct k_mem_slab * slab, void * mem );
+Parameters:
+- slab: struct k_mem_slab * — Address of the memory slab.
+- mem: void * — Pointer to the memory block (as returned by k_mem_slab_alloc()).
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

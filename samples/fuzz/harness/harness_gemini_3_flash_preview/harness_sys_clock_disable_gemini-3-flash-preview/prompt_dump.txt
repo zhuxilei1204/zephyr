@@ -1,0 +1,107 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: sys_clock_disable, k_queue_get, sys_reboot, irq_lock, Function
+
+### Function sys_clock_disable
+Signature: void(void)
+Location: drivers/timer/cortex_m_systick.c:530-533
+Cyclomatic: -1 Lines: -1
+Includes: cmsis_core.h, cortex_m_systick.h, zephyr/drivers/counter.h, zephyr/drivers/timer/system_timer.h, zephyr/init.h, zephyr/irq.h, zephyr/spinlock.h, zephyr/sys/util.h, zephyr/sys_clock.h
+Outgoing calls summary: <operators>.assignmentAnd(), <operator>.indirectFieldAccess(), <operator>.not()
+Incoming callers count: 1
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- sys_clock_disable (api:sys_clock_disable:overview#c0) :: API: sys_clock_disable Signature: void sys_clock_disable ( void );
+- Function sys_clock_disable (func:sys_clock_disable:drivers/timer/cortex_m_systick.c#c0) :: FUNC sys_clock_disable void(void) file drivers/timer/cortex_m_systick.c:530-533 
+- Type sys_clock_disable (type:sys_clock_disable:drivers/timer/cortex_m_systick.c#c0) :: TYPE type sys_clock_disable drivers/timer/cortex_m_systick.c sys_clock_disable
+- Function Summary sys_clock_disable (funcsum:sys_clock_disable:drivers/timer/cortex_m_systick.c:530-533#c0) :: FUNC_SUMMARY sys_clock_disable Signature: void(void) Location: drivers/timer/cortex_m_systick.c:530-533 Parameters: void Metrics: cyclomatic=-1 nloc=-1
+- Call sys_clock_disable -> <operator>.indirectFieldAccess (edge:sys_clock_disable-><operator>.indirectFieldAccess:drivers/timer/cortex_m_systick.c:532#c0) :: Call: sys_clock_disable -> <operator>.indirectFieldAccess at drivers/timer/cortex_m_systick.c:532
+- Call sys_clock_disable -> <operator>.not (edge:sys_clock_disable-><operator>.not:drivers/timer/cortex_m_systick.c:532#c0) :: Call: sys_clock_disable -> <operator>.not at drivers/timer/cortex_m_systick.c:532
+
+Official documentation (full):
+Title: sys_clock_disable
+Signature: void sys_clock_disable ( void );
+
+### Function k_queue_get
+Signature: void * k_queue_get ( struct k_queue * queue, k_timeout_t timeout );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+- timeout: k_timeout_t — Waiting period to obtain a data item, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Address of the data item if successful; NULL if returned without waiting, or waiting period timed out.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_queue_get
+Signature: void * k_queue_get ( struct k_queue * queue, k_timeout_t timeout );
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+- timeout: k_timeout_t — Waiting period to obtain a data item, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Address of the data item if successful; NULL if returned without waiting, or waiting period timed out.
+
+### Function sys_reboot
+Signature: void(int)
+Location: lib/os/reboot.c:16-48
+Cyclomatic: -1 Lines: -1
+Includes: zephyr/cache.h, zephyr/debug/gcov.h, zephyr/drivers/timer/system_timer.h, zephyr/kernel.h, zephyr/sys/printk.h, zephyr/sys/reboot.h
+Outgoing calls summary: <operator>.cast(), kernel/include/zephyr/irq.h:irq_lock:ANY(0)(), arch_irq_lock(), kernel/include/zephyr/sys/util_macro.h:IS_ENABLED:int(1)(), sys_clock_disable(), sys_arch_reboot(), printk(), k_cpu_idle()
+Incoming callers count: 0
+
+### Function irq_lock
+Signature: ANY(0)
+Location: lib/os/reboot.c:261-261, drivers/gpio/gpio_mmio32.c:261-261
+Cyclomatic: -1 Lines: -1
+Includes: errno.h, zephyr/drivers/gpio/gpio_utils.h, zephyr/irq.h, zephyr/cache.h, zephyr/debug/gcov.h, zephyr/drivers/timer/system_timer.h, zephyr/kernel.h, zephyr/sys/printk.h, zephyr/sys/reboot.h, #include <zephyr/irq.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: irq_lock
+Definition: #define irq_lock ( )
+Includes:
+#include <zephyr/irq.h>
+Details:
+z_smp_global_lock()
+Lock interrupts.
+This routine disables all interrupts on the CPU. It returns an unsigned integer "lock-out key", which is an architecture-dependent indicator of whether interrupts were locked prior to the call. The lock-out key must be passed to irq_unlock() to re-enable interrupts.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

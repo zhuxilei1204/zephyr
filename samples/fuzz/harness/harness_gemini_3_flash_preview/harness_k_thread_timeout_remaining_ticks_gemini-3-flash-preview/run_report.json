@@ -1,0 +1,19 @@
+{
+  "overall_status": "PASS",
+  "stage": "run",
+  "classification": "ok",
+  "subtype": null,
+  "details": {
+    "run": {
+      "status": "PASS",
+      "stage": "run",
+      "command": "/home/zwz/zephyr-venv/bin/west build -t run",
+      "returncode": -9,
+      "timeout": false,
+      "marker_hit": true,
+      "stdout_tail": "-- west build: running target run\n[0/1] To exit from QEMU enter: 'CTRL+a, x'[QEMU] CPU: cortex-m3\n[00:00:00.000,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20002900 for thread 0x20000c38: obj_size=4096 buf_start=0x20002900  buf_size 4096 stack_ptr=0x20003900\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20002800 for thread 0x20000b70: obj_size=256 buf_start=0x20002800  buf_size 256 stack_ptr=0x20002900\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001000 for thread 0x20000668: obj_size=2048 buf_start=0x20001000  buf_size 2048 stack_ptr=0x20001800\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20013900 for thread 0x20000de8: obj_size=1024 buf_start=0x20013900  buf_size 1024 stack_ptr=0x20013d00\u001b[0m\r\n*** Booting Zephyr OS build b31c3c1684e7 ***\r\n[00:00:00.000,000] \u001b[0m<dbg> os: k_sched_lock: scheduler locked (0x20000c38:0)\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000c38:0)\u001b[0m\r\n[TEST_CASE_COMPLETED]\r\n[",
+      "stderr_tail": "qemu-system-arm: warning: nic lan9118.0 has no peer\n",
+      "log_path": "/home/zwz/rtos_fuzz_agent/src/generated_tests/fuzz/20251231_132018_k_thread_timeout_remaining_ticks_gemini-3-flash-preview/run.log"
+    }
+  }
+}

@@ -1,0 +1,59 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: sys_clock_set_timeout, Incoming, Function, Type, Call
+
+### Function sys_clock_set_timeout
+Signature: void(int32_t,_Bool)
+Location: drivers/timer/cortex_m_systick.c:308-422
+Cyclomatic: -1 Lines: -1
+Includes: cmsis_core.h, cortex_m_systick.h, zephyr/drivers/counter.h, zephyr/drivers/timer/system_timer.h, zephyr/init.h, zephyr/irq.h, zephyr/spinlock.h, zephyr/sys/util.h, zephyr/sys_clock.h
+Outgoing calls summary: <operator>.logicalAnd(), samples/hello_world/build/zephyr/include/generated/zephyr/zephyr/sys/util_macro.h:IS_ENABLED:int(1)(), <operator>.equals(), <operators>.assignmentAnd(), <operator>.indirectFieldAccess(), <operator>.not(), <operator>.assignment(), drivers/timer/cortex_m_systick.c:TIMER_STOPPED:int(0)()
+Incoming callers count: 3
+Official docs (summary):
+Parameters:
+- ticks: int32_t — Timeout in tick units
+- idle: bool — Hint to the driver that the system is about to enter the idle state immediately after setting the timeout
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of z_cms_lptim_hook_on_lpm_entry (rel:in:z_cms_lptim_hook_on_lpm_entry#c0) :: incoming: sys_clock_set_timeout
+- sys_clock_set_timeout (api:sys_clock_set_timeout:overview#c0) :: API: sys_clock_set_timeout Signature: void sys_clock_set_timeout ( int32_t ticks, bool idle );
+- Incoming of drivers/timer/cortex_m_systick.c:TIMER_STOPPED:int(0) (rel:in:drivers/timer/cortex_m_systick.c:TIMER_STOPPED:int(0)#c0) :: incoming: sys_clock_idle_exit, sys_clock_set_timeout
+- Function sys_clock_set_timeout (func:sys_clock_set_timeout:drivers/timer/cortex_m_systick.c#c0) :: FUNC sys_clock_set_timeout void(int32_t,_Bool) file drivers/timer/cortex_m_systick.c:308-422 
+- Type sys_clock_set_timeout (type:sys_clock_set_timeout:drivers/timer/cortex_m_systick.c#c0) :: TYPE type sys_clock_set_timeout drivers/timer/cortex_m_systick.c sys_clock_set_timeout
+- Call sys_clock_set_timeout -> <operator>.assignment (edge:sys_clock_set_timeout-><operator>.assignment:drivers/timer/cortex_m_systick.c:327#c0) :: Call: sys_clock_set_timeout -> <operator>.assignment at drivers/timer/cortex_m_systick.c:327
+
+Official documentation (full):
+Title: sys_clock_set_timeout
+Signature: void sys_clock_set_timeout ( int32_t ticks, bool idle );
+Parameters:
+- ticks: int32_t — Timeout in tick units
+- idle: bool — Hint to the driver that the system is about to enter the idle state immediately after setting the timeout
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

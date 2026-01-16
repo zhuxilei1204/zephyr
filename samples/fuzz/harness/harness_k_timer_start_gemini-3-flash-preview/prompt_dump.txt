@@ -1,0 +1,93 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_timer_start, DT_N_S_system_clock_P_compatible_FOREACH_PROP_ELEM_SEP_VARGS, z_impl_ipm_max_data_size_get, DT_N_S_soc_S_uart_40006000_P_clocks_FOREACH_PROP_ELEM, kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC:ANY(4)
+
+### Function k_timer_start
+Signature: void(k_timer*,k_timeout_t,k_timeout_t)
+Location: kernel/timer.c:139-186
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, stdbool.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/spinlock.h, zephyr/syscalls/k_timer_expires_ticks_mrsh.c, zephyr/syscalls/k_timer_remaining_ticks_mrsh.c, zephyr/syscalls/k_timer_start_mrsh.c, zephyr/syscalls/k_timer_status_get_mrsh.c, zephyr/syscalls/k_timer_status_sync_mrsh.c, zephyr/syscalls/k_timer_stop_mrsh.c, zephyr/syscalls/k_timer_user_data_get_mrsh.c, zephyr/syscalls/k_timer_user_data_set_mrsh.c
+Outgoing calls summary: kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC:ANY(4)(), <operator>.assignment(), k_spin_lock(), <operator>.addressOf(), kernel/include/zephyr/sys/clock.h:K_TIMEOUT_EQ:ANY(2)(), <operator>.equals(), <operator>.fieldAccess(), <operator>.cast()
+Incoming callers count: 2
+Official docs (summary):
+Parameters:
+- timer: struct k_timer * — Address of timer.
+- duration: k_timeout_t — Initial timer duration.
+- period: k_timeout_t — Timer period.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_timer_start (api:k_timer_start:overview#c0) :: API: k_timer_start Signature: void k_timer_start ( struct k_timer * timer, k_timeout_t duration, k_timeout_t period );
+- Incoming of z_init_timeout (rel:in:z_init_timeout#c0) :: incoming: k_timer_init
+- Call z_impl_k_timer_start -> k_spin_lock (edge:z_impl_k_timer_start->k_spin_lock:kernel/timer.c:149#c0) :: Call: z_impl_k_timer_start -> k_spin_lock at kernel/timer.c:149
+- Call z_impl_k_timer_start -> k_spin_unlock (edge:z_impl_k_timer_start->k_spin_unlock:kernel/timer.c:152#c0) :: Call: z_impl_k_timer_start -> k_spin_unlock at kernel/timer.c:152
+- Call z_impl_k_timer_start -> <operator>.assignment (edge:z_impl_k_timer_start-><operator>.assignment:kernel/timer.c:180#c0) :: Call: z_impl_k_timer_start -> <operator>.assignment at kernel/timer.c:180
+- Call z_impl_k_timer_start -> k_spin_unlock (edge:z_impl_k_timer_start->k_spin_unlock:kernel/timer.c:185#c0) :: Call: z_impl_k_timer_start -> k_spin_unlock at kernel/timer.c:185
+
+Official documentation (full):
+Title: k_timer_start
+Signature: void k_timer_start ( struct k_timer * timer, k_timeout_t duration, k_timeout_t period );
+Parameters:
+- timer: struct k_timer * — Address of timer.
+- duration: k_timeout_t — Initial timer duration.
+- period: k_timeout_t — Timer period.
+
+### Function DT_N_S_system_clock_P_compatible_FOREACH_PROP_ELEM_SEP_VARGS
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function z_impl_ipm_max_data_size_get
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function DT_N_S_soc_S_uart_40006000_P_clocks_FOREACH_PROP_ELEM
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC:ANY(4)
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

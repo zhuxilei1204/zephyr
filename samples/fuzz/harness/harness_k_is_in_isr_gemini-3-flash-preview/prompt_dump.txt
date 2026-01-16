@@ -1,0 +1,89 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_is_in_isr, z_impl_w1_read_block, K_SYSCALL_DRIVER_MIPI_DSI, DT_N_S_soc_S_uart_40004000_P_interrupt_names_FOREACH_PROP_ELEM_SEP, arch_is_in_isr
+
+### Function k_is_in_isr
+Signature: bool(void)
+Location: kernel/thread.c:76-79
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, kswap.h, kthread.h, stdbool.h, string.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/llext/symbol.h, zephyr/logging/log.h, zephyr/random/random.h, zephyr/spinlock.h, zephyr/sys/atomic.h, zephyr/sys/check.h, zephyr/sys/iterable_sections.h, zephyr/sys/math_extras.h, zephyr/sys_clock.h, zephyr/syscalls/k_is_preempt_thread_mrsh.c, zephyr/syscalls/k_thread_create_mrsh.c, zephyr/syscalls/k_thread_custom_data_get_mrsh.c, zephyr/syscalls/k_thread_custom_data_set_mrsh.c, zephyr/syscalls/k_thread_name_copy_mrsh.c, zephyr/syscalls/k_thread_name_set_mrsh.c, zephyr/syscalls/k_thread_priority_get_mrsh.c, zephyr/syscalls/k_thread_stack_space_get_mrsh.c, zephyr/syscalls/k_thread_timeout_expires_ticks_mrsh.c, zephyr/syscalls/k_thread_timeout_remaining_ticks_mrsh.c, zephyr/tracing/tracing.h
+Outgoing calls summary: arch_is_in_isr()
+Incoming callers count: 4
+Official docs (summary):
+Return values:
+- : false if invoked by a thread. true if invoked by an ISR.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Outgoing of k_is_in_isr (rel:out:k_is_in_isr#c0) :: outgoing: arch_is_in_isr
+- k_is_in_isr (api:k_is_in_isr:overview#c0) :: API: k_is_in_isr Signature: bool k_is_in_isr ( void );
+- Function k_is_in_isr (func:k_is_in_isr:kernel/thread.c#c0) :: FUNC k_is_in_isr bool(void) file kernel/thread.c:76-79 
+- Function Summary k_is_in_isr (funcsum:k_is_in_isr:kernel/thread.c:76-79#c0) :: FUNC_SUMMARY k_is_in_isr Signature: bool(void) Location: kernel/thread.c:76-79 Parameters: void Metrics: cyclomatic=-1 nloc=-1
+- Type k_is_in_isr (type:k_is_in_isr:kernel/thread.c#c0) :: TYPE type k_is_in_isr kernel/thread.c k_is_in_isr
+- Call k_is_in_isr -> arch_is_in_isr (edge:k_is_in_isr->arch_is_in_isr:kernel/thread.c:78#c0) :: Call: k_is_in_isr -> arch_is_in_isr at kernel/thread.c:78
+
+Official documentation (full):
+Title: k_is_in_isr
+Signature: bool k_is_in_isr ( void );
+Return values:
+- : false if invoked by a thread. true if invoked by an ISR.
+
+### Function z_impl_w1_read_block
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function K_SYSCALL_DRIVER_MIPI_DSI
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function DT_N_S_soc_S_uart_40004000_P_interrupt_names_FOREACH_PROP_ELEM_SEP
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function arch_is_in_isr
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

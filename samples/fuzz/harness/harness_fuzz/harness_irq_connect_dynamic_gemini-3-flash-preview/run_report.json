@@ -1,0 +1,20 @@
+{
+  "overall_status": "PASS",
+  "stage": "run",
+  "classification": "ok",
+  "subtype": null,
+  "details": {
+    "run": {
+      "status": "FAIL",
+      "stage": "run",
+      "command": "/home/zwz/zephyr-venv/bin/west build -t run",
+      "returncode": 1,
+      "timeout": false,
+      "marker_hit": false,
+      "stdout_tail": ":00.000,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20000fb0 for thread 0x20000628: obj_size=2048 buf_start=0x20000fb0  buf_size 2048 stack_ptr=0x200017b0\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x200138b0 for thread 0x20000da8: obj_size=1024 buf_start=0x200138b0  buf_size 1024 stack_ptr=0x20013cb0\u001b[0m\r\n*** Booting Zephyr OS build b31c3c1684e7 ***\r\n[00:00:00.000,000] \u001b[0m<dbg> os: k_sched_lock: scheduler locked (0x20000bf8:0)\u001b[0m\r\n[00:00:00.000,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:0)\u001b[0m\r\nASSERTION FAIL [table_idx < (32 - 0)] @ WEST_TOPDIR/zephyr/arch/common/sw_isr_common.c:20\r\n[00:00:00.000,000] \u001b[1;31m<err> os: r0/a1:  0x00000004  r1/a2:  0x00000014  r2/a3:  0x00000007\u001b[0m\r\n[00:00:00.000,000] \u001b[1;31m<err> os: r3/a4:  0x00000004 r12/ip:  0x00000004 r14/lr:  0x00002a67\u001b[0m\r\n[00:00:00.000,000] \u001b[1;31m<err> os:  xpsr:  0x21000000\u001b[0m\r\n[00:00:00.000,000] \u001b[1;31m<err> os: Faulting instruction address (r15/pc): 0x00008e74\u001b[0m\r\n[00:00:00.000,000] \u001b[1;31m<err> os: >>> ZEPHYR FATAL ERROR 4: Kernel panic on CPU 0\u001b[0m\r\n[00:00:00.000,000] \u001b[1;31m<err> os: Current thread: 0x20000bf8 (main)\u001b[0m\r\n[00:00:00.020,000] \u001b[1;31m<err> os: Halting system\u001b[0m\r\n[00:00:00.020,000] \u001b[1;31m<err> os: ***** HARD FAULT *****\u001b[0m\r\n[00:00:00.020,000] \u001b[1;31m<err> os:   Fault escalation (see below)\u001b[0m\r\nASSERTION FAIL [0] @ WEST_TOPDIR/zephyr/arch/arm/core/cortex_m/fault.c:749\r\n\tFault escalation without FSR info\r\nFAILED: zephyr/CMakeFiles/run_qemu /home/zwz/zephyr/samples/fuzz/build/zephyr/CMakeFiles/run_qemu \ncd /home/zwz/zephyr/samples/fuzz/build && /home/zwz/zephyr-sdk-0.17.4/sysroots/x86_64-pokysdk-linux/usr/bin/qemu-system-arm -cpu cortex-m3 -machine mps2-an385 -nographic -vga none -net none -pidfile qemu.pid -chardev stdio,id=con,mux=on -serial chardev:con -mon chardev=con,mode=readline -icount shift=7,align=off,sleep=off -rtc clock=vm -kernel /home/zwz/zephyr/samples/fuzz/build/zephyr/zephyr.elf\nninja: build stopped: subcommand failed.\n",
+      "stderr_tail": "qemu-system-arm: warning: nic lan9118.0 has no peer\nqemu: fatal: Lockup: can't escalate 3 to HardFault (current priority -1)\n\nR00=00000004 R01=000002ed R02=20000bf8 R03=00000004\nR04=0000b3bc R05=20002727 R06=20002740 R07=20002768\nR08=00000000 R09=20002768 R10=0000bd30 R11=00000000\nR12=00000004 R13=200026e8 R14=0000326f R15=00008e74\nXPSR=21000003 --C- T handler\nFPSCR: 00000000\nAborted (core dumped)\nFATAL ERROR: command exited with status 1: /usr/bin/cmake --build /home/zwz/zephyr/samples/fuzz/build --target run\n",
+      "log_path": "/home/zwz/rtos_fuzz_agent/src/generated_tests/fuzz/20251229_184611_irq_connect_dynamic_gemini-3-flash-preview/run.log",
+      "reason": "运行退出码 1"
+    }
+  }
+}

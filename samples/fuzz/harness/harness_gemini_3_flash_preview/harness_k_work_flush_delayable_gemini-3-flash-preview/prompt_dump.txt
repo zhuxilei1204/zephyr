@@ -1,0 +1,115 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_work_flush_delayable, k_work_init_delayable, Call, Incoming, k_work_flush
+
+### Function k_work_flush_delayable
+Signature: bool k_work_flush_delayable ( struct k_work_delayable * dwork, struct k_work_sync * sync );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- dwork: struct k_work_delayable * — pointer to the delayable work item.
+- sync: struct k_work_sync * — pointer to an opaque item containing state related to the pending cancellation. The object must persist until the call returns, and be accessible from both the caller thread and the work queue thread. The object must not be used for any other flush or cancel operation until this one completes. On architectures with CONFIG_KERNEL_COHERENCE the object must be allocated in coherent memory.
+Return values:
+- : if call had to wait for completion
+- : if work was already idle
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_work_flush_delayable (api:k_work_flush_delayable:overview#c0) :: API: k_work_flush_delayable Signature: bool k_work_flush_delayable ( struct k_work_delayable * dwork, struct k_work_sync * sync );
+- k_work_flush_delayable (api:k_work_flush_delayable:parameters#c0) :: API: k_work_flush_delayable Section: parameters param dwork: struct k_work_delayable * pointer to the delayable work item. param sync: struct k_work_sync * pointer to an opaque item containing state related to the pending cancellation. The object must persist until the call returns, and be accessible from both the call…
+- Call k_work_flush -> work_flush_locked (edge:k_work_flush->work_flush_locked:kernel/work.c:474#c0) :: Call: k_work_flush -> work_flush_locked at kernel/work.c:474
+- Incoming of work_flush_locked (rel:in:work_flush_locked#c0) :: incoming: k_work_flush
+- k_work_flush (api:k_work_flush:overview#c0) :: API: k_work_flush Signature: bool k_work_flush ( struct k_work * work, struct k_work_sync * sync );
+- k_work_delayable (api:k_work_delayable:overview#c0) :: API: k_work_delayable Signature:
+
+Official documentation (full):
+Title: k_work_flush_delayable
+Signature: bool k_work_flush_delayable ( struct k_work_delayable * dwork, struct k_work_sync * sync );
+Parameters:
+- dwork: struct k_work_delayable * — pointer to the delayable work item.
+- sync: struct k_work_sync * — pointer to an opaque item containing state related to the pending cancellation. The object must persist until the call returns, and be accessible from both the caller thread and the work queue thread. The object must not be used for any other flush or cancel operation until this one completes. On architectures with CONFIG_KERNEL_COHERENCE the object must be allocated in coherent memory.
+Return values:
+- : if call had to wait for completion
+- : if work was already idle
+
+### Function k_work_init_delayable
+Signature: void k_work_init_delayable ( struct k_work_delayable * dwork, k_work_handler_t handler );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- dwork: struct k_work_delayable * — the delayable work structure to be initialized.
+- handler: k_work_handler_t — the handler to be invoked by the work item.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_work_init_delayable
+Signature: void k_work_init_delayable ( struct k_work_delayable * dwork, k_work_handler_t handler );
+Parameters:
+- dwork: struct k_work_delayable * — the delayable work structure to be initialized.
+- handler: k_work_handler_t — the handler to be invoked by the work item.
+
+### Function k_work_flush
+Signature: bool(k_work*,k_work_sync*)
+Location: kernel/work.c:458-488
+Cyclomatic: -1 Lines: -1
+Includes: errno.h, ksched.h, wait_q.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/logging/log.h, zephyr/spinlock.h, zephyr/sys/printk.h
+Outgoing calls summary: kernel/include/zephyr/sys/__assert.h:__ASSERT_NO_MSG:ANY(1)(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.assignment(), <operator>.addressOf(), <operator>.indirectFieldAccess(), k_spin_lock(), kernel/include/stdbool.h:bool:ANY(0)(), work_flush_locked()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- work: struct k_work * — pointer to the work item.
+- sync: struct k_work_sync * — pointer to an opaque item containing state related to the pending cancellation. The object must persist until the call returns, and be accessible from both the caller thread and the work queue thread. The object must not be used for any other flush or cancel operation until this one completes. On architectures with CONFIG_KERNEL_COHERENCE the object must be allocated in coherent memory.
+Return values:
+- : if call had to wait for completion
+- : if work was already idle
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_work_flush (api:k_work_flush:overview#c0) :: API: k_work_flush Signature: bool k_work_flush ( struct k_work * work, struct k_work_sync * sync );
+
+Official documentation (full):
+Title: k_work_flush
+Signature: bool k_work_flush ( struct k_work * work, struct k_work_sync * sync );
+Parameters:
+- work: struct k_work * — pointer to the work item.
+- sync: struct k_work_sync * — pointer to an opaque item containing state related to the pending cancellation. The object must persist until the call returns, and be accessible from both the caller thread and the work queue thread. The object must not be used for any other flush or cancel operation until this one completes. On architectures with CONFIG_KERNEL_COHERENCE the object must be allocated in coherent memory.
+Return values:
+- : if call had to wait for completion
+- : if work was already idle
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

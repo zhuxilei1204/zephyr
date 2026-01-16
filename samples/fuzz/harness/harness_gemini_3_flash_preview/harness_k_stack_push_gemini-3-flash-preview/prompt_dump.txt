@@ -1,0 +1,142 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_stack_push, k_msgq_get, k_stack_init, k_lifo_put, Function
+
+### Function k_stack_push
+Signature: int k_stack_push ( struct k_stack * stack, stack_data_t data );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- stack: struct k_stack * — Address of the stack.
+- data: stack_data_t — Value to push onto the stack.
+Return values:
+- : on success
+- : if stack is full
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_lifo_put (api:k_lifo_put:overview#c0) :: API: k_lifo_put Signature:
+- k_stack_push (api:k_stack_push:overview#c0) :: API: k_stack_push Signature: int k_stack_push ( struct k_stack * stack, stack_data_t data );
+- Function z_impl_k_stack_push (func:z_impl_k_stack_push:kernel/stack.c#c0) :: FUNC z_impl_k_stack_push int(k_stack*,stack_data_t) file kernel/stack.c:101-136 
+- K_STACK_DEFINE (api:K_STACK_DEFINE:overview#c0) :: API: K_STACK_DEFINE Signature:
+- k_stack_push (api:k_stack_push:parameters#c0) :: API: k_stack_push Section: parameters param stack: struct k_stack * Address of the stack. param data: stack_data_t Value to push onto the stack.
+- Function Summary z_impl_k_stack_push (funcsum:z_impl_k_stack_push:kernel/stack.c:101-136#c0) :: FUNC_SUMMARY z_impl_k_stack_push Signature: int(k_stack*,stack_data_t) Location: kernel/stack.c:101-136 Parameters: k_stack* stack, stack_data_t data Metrics: cyclomatic=-1 nloc=-1
+
+Official documentation (full):
+Title: k_stack_push
+Signature: int k_stack_push ( struct k_stack * stack, stack_data_t data );
+Parameters:
+- stack: struct k_stack * — Address of the stack.
+- data: stack_data_t — Value to push onto the stack.
+Return values:
+- : on success
+- : if stack is full
+
+### Function k_msgq_get
+Signature: int k_msgq_get ( struct k_msgq * msgq, void * data, k_timeout_t timeout );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- data: void * — Address of area to hold the received message.
+- timeout: k_timeout_t — Waiting period to receive the message, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Message received.
+- : Returned without waiting or queue purged.
+- : Waiting period timed out.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_msgq_get
+Signature: int k_msgq_get ( struct k_msgq * msgq, void * data, k_timeout_t timeout );
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- data: void * — Address of area to hold the received message.
+- timeout: k_timeout_t — Waiting period to receive the message, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Message received.
+- : Returned without waiting or queue purged.
+- : Waiting period timed out.
+
+### Function k_stack_init
+Signature: void(k_stack*,stack_data_t*,uint32_t)
+Location: kernel/stack.c:27-42
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/sys/check.h, zephyr/sys/math_extras.h, zephyr/syscalls/k_stack_alloc_init_mrsh.c, zephyr/syscalls/k_stack_pop_mrsh.c, zephyr/syscalls/k_stack_push_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: z_waitq_init(), <operator>.addressOf(), <operator>.indirectFieldAccess(), <operator>.assignment(), <operator>.cast(), <operator>.arrayInitializer(), <operator>.addition(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_INIT:ANY(3)()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- stack: struct k_stack * — Address of the stack.
+- buffer: stack_data_t * — Address of array used to hold stacked values.
+- num_entries: uint32_t — Maximum number of values that can be stacked.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_stack_init
+Signature: void k_stack_init ( struct k_stack * stack, stack_data_t * buffer, uint32_t num_entries );
+Parameters:
+- stack: struct k_stack * — Address of the stack.
+- buffer: stack_data_t * — Address of array used to hold stacked values.
+- num_entries: uint32_t — Maximum number of values that can be stacked.
+
+### Function k_lifo_put
+Signature: #define k_lifo_put ( lifo, data )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_lifo_put (api:k_lifo_put:overview#c0) :: API: k_lifo_put Signature:
+
+Official documentation (full):
+Title: k_lifo_put
+Definition: #define k_lifo_put ( lifo, data )
+Includes:
+#include <zephyr/kernel.h>
+Details (truncated):
+({ void *_data = data; SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_lifo, put, lifo, _data); k_queue_prepend(&(lifo)->_queue, _data); SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_lifo, put, lifo, _data); }) Add an element to a LIFO queue.
+This routine adds a data item to lifo. A LIFO queue data item must be aligned on a word boundary, and the first word of the item is reserved for the kernel's use.
+Function properties (list may not be complete)
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

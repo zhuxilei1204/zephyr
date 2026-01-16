@@ -1,0 +1,115 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_aligned_alloc, k_free, k_heap_free, sys_heap_free, Type
+
+### Function k_aligned_alloc
+Signature: void * k_aligned_alloc ( size_t align, size_t size );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- align: size_t — Alignment of memory requested (in bytes).
+- size: size_t — Amount of memory requested (in bytes).
+Return values:
+- : Address of the allocated memory if successful; otherwise NULL.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_aligned_alloc (api:k_aligned_alloc:overview#c0) :: API: k_aligned_alloc Signature: void * k_aligned_alloc ( size_t align, size_t size );
+- Type k_heap_aligned_alloc (type:k_heap_aligned_alloc:kernel/kheap.c#c0) :: TYPE type k_heap_aligned_alloc kernel/kheap.c k_heap_aligned_alloc
+- Incoming of z_heap_alloc_helper (rel:in:z_heap_alloc_helper#c0) :: incoming: k_heap_aligned_alloc, k_heap_alloc
+- Call k_heap_aligned_alloc -> <operator>.assignment (edge:k_heap_aligned_alloc-><operator>.assignment:kernel/kheap.c:140#c0) :: Call: k_heap_aligned_alloc -> <operator>.assignment at kernel/kheap.c:140
+- Function k_heap_aligned_alloc (func:k_heap_aligned_alloc:kernel/kheap.c#c0) :: FUNC k_heap_aligned_alloc void*(k_heap*,size_t,size_t,k_timeout_t) file kernel/kheap.c:131-155 
+- Call k_heap_aligned_alloc -> z_heap_alloc_helper (edge:k_heap_aligned_alloc->z_heap_alloc_helper:kernel/kheap.c:140#c0) :: Call: k_heap_aligned_alloc -> z_heap_alloc_helper at kernel/kheap.c:140
+
+Official documentation (full):
+Title: k_aligned_alloc
+Signature: void * k_aligned_alloc ( size_t align, size_t size );
+Parameters:
+- align: size_t — Alignment of memory requested (in bytes).
+- size: size_t — Amount of memory requested (in bytes).
+Return values:
+- : Address of the allocated memory if successful; otherwise NULL.
+
+### Function k_free
+Signature: void(void*)
+Location: kernel/mempool.c:58-73
+Cyclomatic: -1 Lines: -1
+Includes: string.h, zephyr/kernel.h, zephyr/sys/math_extras.h, zephyr/sys/util.h
+Outgoing calls summary: <operator>.notEquals(), /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:NULL:ANY(0)(), <operator>.cast(), <operator>.assignment(), <operator>.preDecrement(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), k_heap_free(), <operator>.indirection()
+Incoming callers count: 3
+Official docs (summary):
+Parameters:
+- ptr: void * — Pointer to previously allocated memory.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_free
+Signature: void k_free ( void * ptr );
+Parameters:
+- ptr: void * — Pointer to previously allocated memory.
+
+### Function k_heap_free
+Signature: void(k_heap*,void*)
+Location: kernel/kheap.c:206-218
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: <operator>.assignment(), k_spin_lock(), <operator>.addressOf(), <operator>.indirectFieldAccess(), sys_heap_free(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC:ANY(4)(), <operator>.logicalAnd(), kernel/include/zephyr/sys/util_macro.h:IS_ENABLED:int(1)()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- h: struct k_heap * — Heap to which to return the memory
+- mem: void * — A valid memory block, or NULL
+Return values:
+- : the specified memory block, which must have been returned from k_heap_alloc(), to the heap for use by other callers. Passing a NULL block is legal, and has no effect.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_heap_free
+Signature: void k_heap_free ( struct k_heap * h, void * mem );
+Parameters:
+- h: struct k_heap * — Heap to which to return the memory
+- mem: void * — A valid memory block, or NULL
+Return values:
+- : the specified memory block, which must have been returned from k_heap_alloc(), to the heap for use by other callers. Passing a NULL block is legal, and has no effect.
+
+### Function sys_heap_free
+Signature: void(sys_heap*,void*)
+Location: lib/heap/heap.c:163-198
+Cyclomatic: -1 Lines: -1
+Includes: heap.h, sanitizer/msan_interface.h, string.h, zephyr/kernel.h, zephyr/sys/heap_listener.h, zephyr/sys/sys_heap.h, zephyr/sys/util.h
+Outgoing calls summary: <operator>.equals(), /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:NULL:ANY(0)(), <operator>.cast(), <operator>.assignment(), <operator>.indirectFieldAccess(), mem_to_chunkid(), kernel/include/zephyr/sys/__assert.h:__ASSERT:ANY(3)(), set_chunk_used()
+Incoming callers count: 3
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

@@ -1,0 +1,157 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_thread_join, k_thread_create, k_thread, Call, K_THREAD_DEFINE
+
+### Function k_thread_join
+Signature: int k_thread_join ( struct k_thread * thread, k_timeout_t timeout );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- thread: struct k_thread * — Thread to wait to exit
+- timeout: k_timeout_t — upper bound time to wait for the thread to exit.
+Return values:
+- : success, target thread has exited or wasn't running
+- : returned without waiting
+- : waiting period timed out
+- : target thread is joining on the caller, or target thread is the caller
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_thread (api:k_thread:overview#c0) :: API: k_thread Signature:
+- k_thread_join (api:k_thread_join:overview#c0) :: API: k_thread_join Signature: int k_thread_join ( struct k_thread * thread, k_timeout_t timeout );
+- Call z_impl_k_thread_join -> <operator>.assignment (edge:z_impl_k_thread_join-><operator>.assignment:kernel/sched.c:1384#c0) :: Call: z_impl_k_thread_join -> <operator>.assignment at kernel/sched.c:1384
+- Call z_impl_k_thread_join -> <operator>.assignment (edge:z_impl_k_thread_join-><operator>.assignment:kernel/sched.c:1382#c0) :: Call: z_impl_k_thread_join -> <operator>.assignment at kernel/sched.c:1382
+- Call z_impl_k_thread_join -> <operator>.assignment (edge:z_impl_k_thread_join-><operator>.assignment:kernel/sched.c:1387#c0) :: Call: z_impl_k_thread_join -> <operator>.assignment at kernel/sched.c:1387
+- Call z_impl_k_thread_join -> <operator>.assignment (edge:z_impl_k_thread_join-><operator>.assignment:kernel/sched.c:1394#c0) :: Call: z_impl_k_thread_join -> <operator>.assignment at kernel/sched.c:1394
+
+Official documentation (full):
+Title: k_thread_join
+Signature: int k_thread_join ( struct k_thread * thread, k_timeout_t timeout );
+Parameters:
+- thread: struct k_thread * — Thread to wait to exit
+- timeout: k_timeout_t — upper bound time to wait for the thread to exit.
+Return values:
+- : success, target thread has exited or wasn't running
+- : returned without waiting
+- : waiting period timed out
+- : target thread is joining on the caller, or target thread is the caller
+
+### Function k_thread_create
+Signature: k_tid_t k_thread_create ( struct k_thread * new_thread, k_thread_stack_t * stack, size_t stack_size, k_thread_entry_t entry, void * p1, void * p2, void * p3, int prio, uint32_t options, k_timeout_t delay );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- new_thread: struct k_thread * — Pointer to uninitialized struct k_thread
+- stack: k_thread_stack_t * — Pointer to the stack space.
+- stack_size: size_t — Stack size in bytes.
+- entry: k_thread_entry_t — Thread entry function.
+- p1: void * — 1st entry point parameter.
+- p2: void * — 2nd entry point parameter.
+- p3: void * — 3rd entry point parameter.
+- prio: int — Thread priority.
+- options: uint32_t — Thread options.
+- delay: k_timeout_t — Scheduling delay, or K_NO_WAIT (for no delay).
+Return values:
+- : ID of new thread.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_thread (api:k_thread:overview#c0) :: API: k_thread Signature:
+- K_THREAD_DEFINE (api:K_THREAD_DEFINE:overview#c0) :: API: K_THREAD_DEFINE Signature:
+- k_thread_create (api:k_thread_create:overview#c0) :: API: k_thread_create Signature: k_tid_t k_thread_create ( struct k_thread * new_thread, k_thread_stack_t * stack, size_t stack_size, k_thread_entry_t entry, void * p1, void * p2, void * p3, int prio, uint32_t options, k_timeout_t delay );
+
+Official documentation (full):
+Title: k_thread_create
+Signature: k_tid_t k_thread_create ( struct k_thread * new_thread, k_thread_stack_t * stack, size_t stack_size, k_thread_entry_t entry, void * p1, void * p2, void * p3, int prio, uint32_t options, k_timeout_t delay );
+Parameters:
+- new_thread: struct k_thread * — Pointer to uninitialized struct k_thread
+- stack: k_thread_stack_t * — Pointer to the stack space.
+- stack_size: size_t — Stack size in bytes.
+- entry: k_thread_entry_t — Thread entry function.
+- p1: void * — 1st entry point parameter.
+- p2: void * — 2nd entry point parameter.
+- p3: void * — 3rd entry point parameter.
+- prio: int — Thread priority.
+- options: uint32_t — Thread options.
+- delay: k_timeout_t — Scheduling delay, or K_NO_WAIT (for no delay).
+Return values:
+- : ID of new thread.
+
+### Function k_thread
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/thread.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_thread (api:k_thread:overview#c0) :: API: k_thread Signature:
+
+Official documentation (full):
+Title: k_thread
+Includes:
+#include <zephyr/kernel/thread.h>
+
+### Function K_THREAD_DEFINE
+Signature: #define K_THREAD_DEFINE ( name, stack_size, entry, p1, p2, p3, prio, options, delay )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_THREAD_DEFINE (api:K_THREAD_DEFINE:overview#c0) :: API: K_THREAD_DEFINE Signature:
+
+Official documentation (full):
+Title: K_THREAD_DEFINE
+Definition: #define K_THREAD_DEFINE ( name, stack_size, entry, p1, p2, p3, prio, options, delay )
+Includes:
+#include <zephyr/kernel.h>
+Details (truncated):
+K_THREAD_STACK_DEFINE(_k_thread_stack_##name, stack_size); Z_THREAD_COMMON_DEFINE(name, stack_size, entry, p1, p2, p3, prio, options, delay) Statically define and initialize a thread.
+The thread may be scheduled for immediate execution or a delayed start.
+Thread options are architecture-specific, and can include K_ESSENTIAL, K_FP_REGS, and K_SSE_REGS. Multiple options may be specified by separating them using "|" (the logical OR operator).
+The ID of the thread can be accessed using:
+extern const k_tid_t <name>;
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

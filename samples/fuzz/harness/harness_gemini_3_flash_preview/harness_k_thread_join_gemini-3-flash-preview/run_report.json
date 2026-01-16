@@ -1,0 +1,19 @@
+{
+  "overall_status": "PASS",
+  "stage": "run",
+  "classification": "ok",
+  "subtype": null,
+  "details": {
+    "run": {
+      "status": "PASS",
+      "stage": "run",
+      "command": "/home/zwz/zephyr-venv/bin/west build -t run",
+      "returncode": -9,
+      "timeout": false,
+      "marker_hit": true,
+      "stdout_tail": "k: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[00:00:00.020,000] \u001b[0m<dbg> os: setup_thread_stack: stack 0x20001548 for thread 0x200006f0: obj_size=1024 buf_start=0x20001548  buf_size 1024 stack_ptr=0x20001948\u001b[0m\r\n[TEST_CASE_COMPLETED]\r",
+      "stderr_tail": "qemu-system-arm: warning: nic lan9118.0 has no peer\n",
+      "log_path": "/home/zwz/rtos_fuzz_agent/src/generated_tests/fuzz/20251231_103453_k_thread_join_gemini-3-flash-preview/run.log"
+    }
+  }
+}

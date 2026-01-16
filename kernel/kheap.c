@@ -12,6 +12,7 @@
 #include <ksched.h>
 #include <wait_q.h>
 
+
 int k_heap_array_get(struct k_heap **heap)
 {
 	int num;

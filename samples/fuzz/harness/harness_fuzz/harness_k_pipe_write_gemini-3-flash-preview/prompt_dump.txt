@@ -1,0 +1,114 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_pipe_write, k_pipe_init, k_pipe, Incoming, Function
+
+### Function k_pipe_write
+Signature: int k_pipe_write ( struct k_pipe * pipe, const uint8_t * data, size_t len, k_timeout_t timeout );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- pipe: struct k_pipe * — Address of the pipe.
+- data: const uint8_t * — Address of data to write.
+- len: size_t — Size of data (in bytes).
+- timeout: k_timeout_t — Waiting period to wait for the data to be written.
+Return values:
+- : of bytes written on success
+- : if no data could be written before the timeout expired
+- : if the write was interrupted by k_pipe_reset(..)
+- : if the pipe was closed
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_pipe (api:k_pipe:overview#c0) :: API: k_pipe Signature:
+- Incoming of pipe_empty (rel:in:pipe_empty#c0) :: incoming: z_impl_k_pipe_write
+- Incoming of copy_to_pending_readers (rel:in:copy_to_pending_readers#c0) :: incoming: z_impl_k_pipe_write
+- Incoming of ring_buf_put (rel:in:ring_buf_put#c0) :: incoming: z_impl_k_pipe_write
+- k_pipe_write (api:k_pipe_write:overview#c0) :: API: k_pipe_write Signature: int k_pipe_write ( struct k_pipe * pipe, const uint8_t * data, size_t len, k_timeout_t timeout );
+- Function z_impl_k_pipe_write (func:z_impl_k_pipe_write:kernel/pipe.c#c0) :: FUNC z_impl_k_pipe_write int(k_pipe*,uint8_t*,size_t,k_timeout_t) file kernel/pipe.c:147-218 
+
+Official documentation (full):
+Title: k_pipe_write
+Signature: int k_pipe_write ( struct k_pipe * pipe, const uint8_t * data, size_t len, k_timeout_t timeout );
+Parameters:
+- pipe: struct k_pipe * — Address of the pipe.
+- data: const uint8_t * — Address of data to write.
+- len: size_t — Size of data (in bytes).
+- timeout: k_timeout_t — Waiting period to wait for the data to be written.
+Return values:
+- : of bytes written on success
+- : if no data could be written before the timeout expired
+- : if the write was interrupted by k_pipe_reset(..)
+- : if the pipe was closed
+
+### Function k_pipe_init
+Signature: void k_pipe_init ( struct k_pipe * pipe, uint8_t * buffer, size_t buffer_size );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- pipe: struct k_pipe * — Address of the pipe.
+- buffer: uint8_t * — Address of the pipe's buffer, or NULL if no ring buffer is used.
+- buffer_size: size_t — Size of the pipe's buffer, or zero if no ring buffer is used.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_pipe_init
+Signature: void k_pipe_init ( struct k_pipe * pipe, uint8_t * buffer, size_t buffer_size );
+Parameters:
+- pipe: struct k_pipe * — Address of the pipe.
+- buffer: uint8_t * — Address of the pipe's buffer, or NULL if no ring buffer is used.
+- buffer_size: size_t — Size of the pipe's buffer, or zero if no ring buffer is used.
+
+### Function k_pipe
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_pipe (api:k_pipe:overview#c0) :: API: k_pipe Signature:
+
+Official documentation (full):
+Title: k_pipe
+Includes:
+#include <zephyr/kernel.h>
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

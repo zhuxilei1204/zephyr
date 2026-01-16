@@ -1,0 +1,19 @@
+{
+  "overall_status": "PASS",
+  "stage": "run",
+  "classification": "ok",
+  "subtype": null,
+  "details": {
+    "run": {
+      "status": "PASS",
+      "stage": "run",
+      "command": "/home/zwz/zephyr-venv/bin/west build -t run",
+      "returncode": -9,
+      "timeout": false,
+      "marker_hit": true,
+      "stdout_tail": "\u001b[0m[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_lock: scheduler locked (0x20000bf8:236)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:236)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:237)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:238)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:239)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:240)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:241)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:242)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:243)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:244)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:245)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:246)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:247)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:248)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:249)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:250)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:251)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:252)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:253)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:254)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:255)\u001b[0m\r\n[00:00:00.070,000] \u001b[0m<dbg> os: k_sched_unlock: scheduler unlocked (0x20000bf8:0)\u001b[0m\r\n[TEST_CASE_COMPLETED]\r",
+      "stderr_tail": "qemu-system-arm: warning: nic lan9118.0 has no peer\n",
+      "log_path": "/home/zwz/rtos_fuzz_agent/src/generated_tests/fuzz/20260103_055218_k_sched_lock_gemini-3-flash-preview/run.log"
+    }
+  }
+}

@@ -1,0 +1,121 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_queue_merge_slist, va_end, k_queue_append_list, k_queue_init, Incoming
+
+### Function k_queue_merge_slist
+Signature: int(k_queue*,sys_slist_t*)
+Location: kernel/queue.c:300-333
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/sys/check.h, zephyr/syscalls/k_queue_alloc_append_mrsh.c, zephyr/syscalls/k_queue_alloc_prepend_mrsh.c, zephyr/syscalls/k_queue_cancel_wait_mrsh.c, zephyr/syscalls/k_queue_get_mrsh.c, zephyr/syscalls/k_queue_init_mrsh.c, zephyr/syscalls/k_queue_is_empty_mrsh.c, zephyr/syscalls/k_queue_peek_head_mrsh.c, zephyr/syscalls/k_queue_peek_tail_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), sys_slist_is_empty(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_EXIT:ANY(4)(), <operator>.minus(), kernel/include/errno.h:EINVAL:int(0)(), <operator>.assignment(), k_queue_append_list(), <operator>.indirectFieldAccess()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+- list: sys_slist_t * — Pointer to sys_slist_t object.
+Return values:
+- : on success
+- : on invalid data
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of k_queue_append_list (rel:in:k_queue_append_list#c0) :: incoming: k_queue_merge_slist
+- k_queue_merge_slist (api:k_queue_merge_slist:overview#c0) :: API: k_queue_merge_slist Signature: int k_queue_merge_slist ( struct k_queue * queue, sys_slist_t * list );
+- Function k_queue_merge_slist (func:k_queue_merge_slist:kernel/queue.c#c0) :: FUNC k_queue_merge_slist int(k_queue*,sys_slist_t*) file kernel/queue.c:300-333 
+- Type k_queue_merge_slist (type:k_queue_merge_slist:kernel/queue.c#c0) :: TYPE type k_queue_merge_slist kernel/queue.c k_queue_merge_slist
+- Function Summary k_queue_merge_slist (funcsum:k_queue_merge_slist:kernel/queue.c:300-333#c0) :: FUNC_SUMMARY k_queue_merge_slist Signature: int(k_queue*,sys_slist_t*) Location: kernel/queue.c:300-333 Parameters: k_queue* queue, sys_slist_t* list Metrics: cyclomatic=-1 nloc=-1
+- Call k_queue_merge_slist -> k_queue_append_list (edge:k_queue_merge_slist->k_queue_append_list:kernel/queue.c:322#c0) :: Call: k_queue_merge_slist -> k_queue_append_list at kernel/queue.c:322
+
+Official documentation (full):
+Title: k_queue_merge_slist
+Signature: int k_queue_merge_slist ( struct k_queue * queue, sys_slist_t * list );
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+- list: sys_slist_t * — Pointer to sys_slist_t object.
+Return values:
+- : on success
+- : on invalid data
+
+### Function va_end
+Signature: ANY(1)
+Location: lib/os/cbprintf_packaged.c:52-52
+Cyclomatic: -1 Lines: -1
+Includes: errno.h, stdarg.h, stdint.h, string.h, sys/types.h, zephyr/linker/utils.h, zephyr/logging/log.h, zephyr/sys/__assert.h, zephyr/sys/cbprintf.h, zephyr/sys/util.h, zephyr/toolchain.h
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function k_queue_append_list
+Signature: int(k_queue*,void*,void*)
+Location: kernel/queue.c:257-298
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/sys/check.h, zephyr/syscalls/k_queue_alloc_append_mrsh.c, zephyr/syscalls/k_queue_alloc_prepend_mrsh.c, zephyr/syscalls/k_queue_cancel_wait_mrsh.c, zephyr/syscalls/k_queue_get_mrsh.c, zephyr/syscalls/k_queue_init_mrsh.c, zephyr/syscalls/k_queue_is_empty_mrsh.c, zephyr/syscalls/k_queue_peek_head_mrsh.c, zephyr/syscalls/k_queue_peek_tail_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.assignment(), kernel/include/stdbool.h:false:int(0)(), <operator>.logicalOr(), <operator>.equals(), <operator>.cast(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_EXIT:ANY(4)(), <operator>.minus()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+- head: void * — Pointer to first node in singly-linked list.
+- tail: void * — Pointer to last node in singly-linked list.
+Return values:
+- : on success
+- : on invalid supplied data
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_queue_append_list
+Signature: int k_queue_append_list ( struct k_queue * queue, void * head, void * tail );
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+- head: void * — Pointer to first node in singly-linked list.
+- tail: void * — Pointer to last node in singly-linked list.
+Return values:
+- : on success
+- : on invalid supplied data
+
+### Function k_queue_init
+Signature: void k_queue_init ( struct k_queue * queue );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_queue_init
+Signature: void k_queue_init ( struct k_queue * queue );
+Parameters:
+- queue: struct k_queue * — Address of the queue.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

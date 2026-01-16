@@ -1,0 +1,141 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_uptime_get_32, k_uptime_get, k_uptime_seconds, k_cycle_get_32, k_uptime_ticks
+
+### Function k_uptime_get_32
+Signature: uint32_t k_uptime_get_32 ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : The low 32 bits of the current uptime, in milliseconds.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_uptime_get_32 (api:k_uptime_get_32:overview#c0) :: API: k_uptime_get_32 Signature: uint32_t k_uptime_get_32 ( void );
+- k_uptime_get (api:k_uptime_get:overview#c0) :: API: k_uptime_get Signature: int64_t k_uptime_get ( void );
+- k_uptime_seconds (api:k_uptime_seconds:overview#c0) :: API: k_uptime_seconds Signature: uint32_t k_uptime_seconds ( void );
+- k_cycle_get_32 (api:k_cycle_get_32:overview#c0) :: API: k_cycle_get_32 Signature: uint32_t k_cycle_get_32 ( void );
+- k_uptime_ticks (api:k_uptime_ticks:overview#c0) :: API: k_uptime_ticks Signature: int64_t k_uptime_ticks ( void );
+- sys_clock_tick_get_32 (api:sys_clock_tick_get_32:overview#c0) :: API: sys_clock_tick_get_32 Signature: uint32_t sys_clock_tick_get_32 ( void );
+
+Official documentation (full):
+Title: k_uptime_get_32
+Signature: uint32_t k_uptime_get_32 ( void );
+Return values:
+- : The low 32 bits of the current uptime, in milliseconds.
+
+### Function k_uptime_get
+Signature: int64_t k_uptime_get ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : Current uptime in milliseconds.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_uptime_get (api:k_uptime_get:overview#c0) :: API: k_uptime_get Signature: int64_t k_uptime_get ( void );
+
+Official documentation (full):
+Title: k_uptime_get
+Signature: int64_t k_uptime_get ( void );
+Return values:
+- : Current uptime in milliseconds.
+
+### Function k_uptime_seconds
+Signature: uint32_t k_uptime_seconds ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : Current uptime in seconds.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_uptime_seconds (api:k_uptime_seconds:overview#c0) :: API: k_uptime_seconds Signature: uint32_t k_uptime_seconds ( void );
+
+Official documentation (full):
+Title: k_uptime_seconds
+Signature: uint32_t k_uptime_seconds ( void );
+Return values:
+- : Current uptime in seconds.
+
+### Function k_cycle_get_32
+Signature: uint32_t k_cycle_get_32 ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : Current hardware clock up-counter (in cycles).
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_cycle_get_32 (api:k_cycle_get_32:overview#c0) :: API: k_cycle_get_32 Signature: uint32_t k_cycle_get_32 ( void );
+
+Official documentation (full):
+Title: k_cycle_get_32
+Signature: uint32_t k_cycle_get_32 ( void );
+Return values:
+- : Current hardware clock up-counter (in cycles).
+
+### Function k_uptime_ticks
+Signature: int64_t k_uptime_ticks ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : Current uptime in ticks.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_uptime_ticks (api:k_uptime_ticks:overview#c0) :: API: k_uptime_ticks Signature: int64_t k_uptime_ticks ( void );
+
+Official documentation (full):
+Title: k_uptime_ticks
+Signature: int64_t k_uptime_ticks ( void );
+Return values:
+- : Current uptime in ticks.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

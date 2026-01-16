@@ -1,0 +1,103 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS on mps2/an385 (QEMU via west). Prefer Zephyr public APIs (k_*). Avoid introducing new infinite loops; only the provided BREAKPOINT may loop to allow the runner to stop execution after the completion marker. Do not use K_FOREVER waits inside the bounded test loop; prefer K_NO_WAIT or short timeouts. Keep memory usage small and deterministic; avoid dynamic allocation unless strictly necessary.
+Fuzz input policy: All variability MUST come from the global FUZZ_INPUT byte array. Derive parameters deterministically from FUZZ_INPUT only (no rand/time). Use the template-provided FR_* helpers (FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range/FR_next_bytes/FR_next_string) to consume FUZZ_INPUT with bounds checks and an advancing offset. Do NOT re-implement these helpers, and do NOT use generic next_* names. IMPORTANT: In this project template, FR_init has the signature: FR_Reader FR_init(const unsigned char* buf, size_t n). Correct usage: FR_Reader fr = FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE). Do NOT call FR_init with 3 arguments and do NOT pass an FR_Reader* to FR_init. Also note: the input length macro is MAX_FUZZ_INPUT_SIZE (there is no FUZZ_INPUT_SIZE). Use modulo/clamping to map raw bytes into valid RTOS ranges (priorities, ticks, sizes). Keep the template's bounded-loop structure in test_task: do NOT introduce new infinite loops or long blocking calls outside the per-iteration test_logic body. Reader discipline (FR_Reader): (1) Initialize the Fuzz Reader (FR_init) outside the per-iteration loop and let it consume FUZZ_INPUT monotonically forward across all iterations. Never reset the reader offset (e.g. 'fr.off = 0') and never re-initialize the reader inside the loop. (2) Inside the loop, always check that enough bytes remain (via FR_remaining or helper return values) before consuming; if input is exhausted or insufficient for a safe parameter set, break the loop immediately instead of falling back to hardcoded defaults or resetting the reader. (3) The purpose of the bounded loop is to explore deeper and varied states from a single FUZZ_INPUT. Avoid repeating the exact same parameter combination across iterations; each iteration should, as far as practical, consume new bytes and exercise a different configuration or state transition.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_msgq_purge, k_msgq_init, Function, Call, k_msgq_cleanup
+
+### Function k_msgq_purge
+Signature: void k_msgq_purge ( struct k_msgq * msgq );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_msgq_purge (api:k_msgq_purge:overview#c0) :: API: k_msgq_purge Signature: void k_msgq_purge ( struct k_msgq * msgq );
+- Function z_impl_k_msgq_purge (func:z_impl_k_msgq_purge:kernel/msg_q.c#c0) :: FUNC z_impl_k_msgq_purge void(k_msgq*) file kernel/msg_q.c:435-462 
+- k_msgq_purge (api:k_msgq_purge:parameters#c0) :: API: k_msgq_purge Section: parameters param msgq: struct k_msgq * Address of the message queue.
+- Call z_impl_k_msgq_purge -> kernel/include/errno.h:ENOMSG:int(0) (edge:z_impl_k_msgq_purge->kernel/include/errno.h:ENOMSG:int(0):kernel/msg_q.c:449#c0) :: Call: z_impl_k_msgq_purge -> kernel/include/errno.h:ENOMSG:int(0) at kernel/msg_q.c:449
+- k_msgq_cleanup (api:k_msgq_cleanup:overview#c0) :: API: k_msgq_cleanup Signature: int k_msgq_cleanup ( struct k_msgq * msgq );
+- k_msgq (api:k_msgq:overview#c0) :: API: k_msgq Signature:
+
+Official documentation (full):
+Title: k_msgq_purge
+Signature: void k_msgq_purge ( struct k_msgq * msgq );
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+
+### Function k_msgq_init
+Signature: void(k_msgq*,char*,size_t,uint32_t)
+Location: kernel/msg_q.c:43-67
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, string.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/linker/sections.h, zephyr/sys/check.h, zephyr/sys/dlist.h, zephyr/sys/math_extras.h, zephyr/syscalls/k_msgq_alloc_init_mrsh.c, zephyr/syscalls/k_msgq_get_attrs_mrsh.c, zephyr/syscalls/k_msgq_get_mrsh.c, zephyr/syscalls/k_msgq_num_free_get_mrsh.c, zephyr/syscalls/k_msgq_num_used_get_mrsh.c, zephyr/syscalls/k_msgq_peek_at_mrsh.c, zephyr/syscalls/k_msgq_peek_mrsh.c, zephyr/syscalls/k_msgq_purge_mrsh.c, zephyr/syscalls/k_msgq_put_front_mrsh.c, zephyr/syscalls/k_msgq_put_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: <operator>.assignment(), <operator>.indirectFieldAccess(), <operator>.addition(), <operator>.multiplication(), z_waitq_init(), <operator>.addressOf(), <operator>.cast(), <operator>.arrayInitializer()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- buffer: char * — Pointer to ring buffer that holds queued messages.
+- msg_size: size_t — Message size (in bytes).
+- max_msgs: uint32_t — Maximum number of messages that can be queued.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_msgq_init
+Signature: void k_msgq_init ( struct k_msgq * msgq, char * buffer, size_t msg_size, uint32_t max_msgs );
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- buffer: char * — Pointer to ring buffer that holds queued messages.
+- msg_size: size_t — Message size (in bytes).
+- max_msgs: uint32_t — Maximum number of messages that can be queued.
+
+### Function k_msgq_cleanup
+Signature: int(k_msgq*)
+Location: kernel/msg_q.c:106-124
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, string.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/linker/sections.h, zephyr/sys/check.h, zephyr/sys/dlist.h, zephyr/sys/math_extras.h, zephyr/syscalls/k_msgq_alloc_init_mrsh.c, zephyr/syscalls/k_msgq_get_attrs_mrsh.c, zephyr/syscalls/k_msgq_get_mrsh.c, zephyr/syscalls/k_msgq_num_free_get_mrsh.c, zephyr/syscalls/k_msgq_num_used_get_mrsh.c, zephyr/syscalls/k_msgq_peek_at_mrsh.c, zephyr/syscalls/k_msgq_peek_mrsh.c, zephyr/syscalls/k_msgq_purge_mrsh.c, zephyr/syscalls/k_msgq_put_front_mrsh.c, zephyr/syscalls/k_msgq_put_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: <operator>.assignment(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.notEquals(), z_waitq_head(), <operator>.addressOf(), <operator>.indirectFieldAccess(), <operator>.cast(), <operator>.minus()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — message queue to cleanup
+Return values:
+- : on success
+- : Queue not empty
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_msgq_cleanup (api:k_msgq_cleanup:overview#c0) :: API: k_msgq_cleanup Signature: int k_msgq_cleanup ( struct k_msgq * msgq );
+
+Official documentation (full):
+Title: k_msgq_cleanup
+Signature: int k_msgq_cleanup ( struct k_msgq * msgq );
+Parameters:
+- msgq: struct k_msgq * — message queue to cleanup
+Return values:
+- : on success
+- : Queue not empty
+
+Generation requirements (Zephyr):
+1) Output must be a strict JSON array without extra explanations.
+2) helper_functions can be an empty string or include static buffers/helpers; test_logic contains only function body statements.
+3) Use the template-provided FR_* helpers to consume FUZZ_INPUT with an advancing offset and bounds checks: call FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range(min,max)/FR_next_bytes(n)/FR_next_string(max_len). Do NOT re-implement these and do NOT define generic next_* names.
+   - Read at least 16 bytes overall (or as many as needed) and derive 3+ independent parameters from FUZZ_INPUT.
+   - No randomness/time: all variability must come from FUZZ_INPUT; deterministic mapping from bytes to parameters.
+4) Prefer Zephyr public APIs (k_*). Avoid K_FOREVER waits in the bounded loop; use K_NO_WAIT or short timeouts.
+5) Use __ASSERT_NO_MSG/__ASSERT or explicit condition checks; on failure paths, clean up resources or return.
+6) Keep memory deterministic and small; avoid dynamic allocation unless strictly necessary.
+7) Choose a suitable api_category for the target function (e.g., fifo, semaphore, thread, timers, kernel).
+8) The harness template will run test_logic inside a bounded for-loop in test_task; do NOT add extra infinite loops or long blocking calls around it, and do NOT modify outer wrappers provided by the template.
+9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

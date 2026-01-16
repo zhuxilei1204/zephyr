@@ -1,0 +1,158 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_mem_map, K_MEM_MAP_UNPAGED, K_MEM_DIRECT_MAP, K_MEM_MAP_UNINIT, K_MEM_MAP_LOCK
+
+### Function k_mem_map
+Signature: void * k_mem_map ( size_t size, uint32_t flags );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- size: size_t — Size of the memory mapping. This must be page-aligned.
+- flags: uint32_t — K_MEM_PERM_*, K_MEM_MAP_* control flags.
+Return values:
+- : The mapped memory location, or NULL if insufficient virtual address space, insufficient physical memory to establish the mapping, or insufficient memory for paging structures.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_MEM_MAP_UNPAGED (api:K_MEM_MAP_UNPAGED:overview#c0) :: API: K_MEM_MAP_UNPAGED Signature:
+- k_mem_map (api:k_mem_map:overview#c0) :: API: k_mem_map Signature: void * k_mem_map ( size_t size, uint32_t flags );
+- K_MEM_DIRECT_MAP (api:K_MEM_DIRECT_MAP:overview#c0) :: API: K_MEM_DIRECT_MAP Signature:
+- K_MEM_MAP_UNINIT (api:K_MEM_MAP_UNINIT:overview#c0) :: API: K_MEM_MAP_UNINIT Signature:
+- K_MEM_MAP_LOCK (api:K_MEM_MAP_LOCK:overview#c0) :: API: K_MEM_MAP_LOCK Signature:
+- k_mem_domain (api:k_mem_domain:overview#c0) :: API: k_mem_domain Signature:
+
+Official documentation (full):
+Title: k_mem_map
+Signature: void * k_mem_map ( size_t size, uint32_t flags );
+Parameters:
+- size: size_t — Size of the memory mapping. This must be page-aligned.
+- flags: uint32_t — K_MEM_PERM_*, K_MEM_MAP_* control flags.
+Return values:
+- : The mapped memory location, or NULL if insufficient virtual address space, insufficient physical memory to establish the mapping, or insufficient memory for paging structures.
+
+### Function K_MEM_MAP_UNPAGED
+Signature: #define K_MEM_MAP_UNPAGED BIT(18)
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/mm.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_MEM_MAP_UNPAGED (api:K_MEM_MAP_UNPAGED:overview#c0) :: API: K_MEM_MAP_UNPAGED Signature:
+
+Official documentation (full):
+Title: K_MEM_MAP_UNPAGED
+Definition: #define K_MEM_MAP_UNPAGED BIT(18)
+Includes:
+#include <zephyr/kernel/mm.h>
+Details (truncated):
+BIT(18)
+#include <zephyr/kernel/mm.h>
+Region will be unpaged i.e.
+not mapped into memory This is meant to be used by kernel code and not by application code.
+Corresponding memory address range will be set so no actual memory will be allocated initially. Allocation will happen through demand paging when addresses in that range are accessed. This is incompatible with K_MEM_MAP_LOCK.
+When this flag is specified, the phys argument to arch_mem_map() is interpreted as a backing store location value not a physical address. This is very similar to arch_mem_page_out() in that regard. Two special location values are defined: ARCH_UNPAGED_ANON_ZERO and ARCH_UNPAGED_ANON_UNINIT. Those are to be used with anonymous memory mappings for zeroed and uninitialized pages respectively.
+
+### Function K_MEM_DIRECT_MAP
+Signature: #define K_MEM_DIRECT_MAP BIT(6)
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/mm.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_MEM_DIRECT_MAP (api:K_MEM_DIRECT_MAP:overview#c0) :: API: K_MEM_DIRECT_MAP Signature:
+
+Official documentation (full):
+Title: K_MEM_DIRECT_MAP
+Definition: #define K_MEM_DIRECT_MAP BIT(6)
+Includes:
+#include <zephyr/kernel/mm.h>
+Details (truncated):
+BIT(6)
+#include <zephyr/kernel/mm.h> Region will be mapped to 1:1 virtual and physical address.
+
+### Function K_MEM_MAP_UNINIT
+Signature: #define K_MEM_MAP_UNINIT BIT(16)
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/mm.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_MEM_MAP_UNINIT (api:K_MEM_MAP_UNINIT:overview#c0) :: API: K_MEM_MAP_UNINIT Signature:
+
+Official documentation (full):
+Title: K_MEM_MAP_UNINIT
+Definition: #define K_MEM_MAP_UNINIT BIT(16)
+Includes:
+#include <zephyr/kernel/mm.h>
+Details (truncated):
+BIT(16)
+#include <zephyr/kernel/mm.h> The mapped region is not guaranteed to be zeroed.
+This may improve performance. The associated page frames may contain indeterminate data, zeroes, or even sensitive information.
+This may not be used with K_MEM_PERM_USER as there are no circumstances where this is safe.
+
+### Function K_MEM_MAP_LOCK
+Signature: #define K_MEM_MAP_LOCK BIT(17)
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/mm.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_MEM_MAP_LOCK (api:K_MEM_MAP_LOCK:overview#c0) :: API: K_MEM_MAP_LOCK Signature:
+
+Official documentation (full):
+Title: K_MEM_MAP_LOCK
+Definition: #define K_MEM_MAP_LOCK BIT(17)
+Includes:
+#include <zephyr/kernel/mm.h>
+Details (truncated):
+BIT(17)
+#include <zephyr/kernel/mm.h> Region will be pinned in memory and never paged.
+Such memory is guaranteed to never produce a page fault due to page-outs or copy-on-write once the mapping call has returned. Physical page frames will be pre-fetched as necessary and pinned.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

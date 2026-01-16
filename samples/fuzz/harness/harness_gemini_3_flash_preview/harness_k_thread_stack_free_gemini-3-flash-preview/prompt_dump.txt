@@ -1,0 +1,132 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_thread_stack_free, k_thread_stack_alloc, Call, k_stack_cleanup, Function
+
+### Function k_thread_stack_free
+Signature: int k_thread_stack_free ( k_thread_stack_t * stack );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- stack: k_thread_stack_t * — Pointer to the thread stack.
+Return values:
+- : on success.
+- : if the thread stack is in use.
+- : if stack is invalid.
+- : if dynamic thread stack allocation is disabled
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_thread_stack_free (api:k_thread_stack_free:overview#c0) :: API: k_thread_stack_free Signature: int k_thread_stack_free ( k_thread_stack_t * stack );
+- k_thread_stack_free (api:k_thread_stack_free:parameters#c0) :: API: k_thread_stack_free Section: parameters param stack: k_thread_stack_t * Pointer to the thread stack.
+- Call k_stack_cleanup -> k_free (edge:k_stack_cleanup->k_free:kernel/stack.c:91#c0) :: Call: k_stack_cleanup -> k_free at kernel/stack.c:91
+- k_stack_cleanup (api:k_stack_cleanup:overview#c0) :: API: k_stack_cleanup Signature: int k_stack_cleanup ( struct k_stack * stack );
+- Function k_stack_cleanup (func:k_stack_cleanup:kernel/stack.c#c0) :: FUNC k_stack_cleanup int(k_stack*) file kernel/stack.c:80-99 
+- Function z_impl_k_thread_stack_free (func:z_impl_k_thread_stack_free:kernel/dynamic_disabled.c#c0) :: FUNC z_impl_k_thread_stack_free int(k_thread_stack_t*) file kernel/dynamic_disabled.c:20-25 
+
+Official documentation (full):
+Title: k_thread_stack_free
+Signature: int k_thread_stack_free ( k_thread_stack_t * stack );
+Parameters:
+- stack: k_thread_stack_t * — Pointer to the thread stack.
+Return values:
+- : on success.
+- : if the thread stack is in use.
+- : if stack is invalid.
+- : if dynamic thread stack allocation is disabled
+
+### Function k_thread_stack_alloc
+Signature: k_thread_stack_t * k_thread_stack_alloc ( size_t size, int flags );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- size: size_t — Stack size in bytes.
+- flags: int — Stack creation flags, or 0.
+Return values:
+- : allocated thread stack on success.
+- : on failure.
+- : 
+- : 
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_thread_stack_alloc (api:k_thread_stack_alloc:overview#c0) :: API: k_thread_stack_alloc Signature: k_thread_stack_t * k_thread_stack_alloc ( size_t size, int flags );
+- K_THREAD_STACK_DEFINE (api:K_THREAD_STACK_DEFINE:overview#c0) :: API: K_THREAD_STACK_DEFINE Signature:
+- K_THREAD_STACK_DECLARE (api:K_THREAD_STACK_DECLARE:overview#c0) :: API: K_THREAD_STACK_DECLARE Signature:
+- k_thread_stack_alloc (api:k_thread_stack_alloc:parameters#c0) :: API: k_thread_stack_alloc Section: parameters param size: size_t Stack size in bytes. param flags: int Stack creation flags, or 0.
+- k_stack_alloc_init (api:k_stack_alloc_init:overview#c0) :: API: k_stack_alloc_init Signature: int32_t k_stack_alloc_init ( struct k_stack * stack, uint32_t num_entries );
+- Call z_impl_k_stack_alloc_init -> z_thread_malloc (edge:z_impl_k_stack_alloc_init->z_thread_malloc:kernel/stack.c:51#c0) :: Call: z_impl_k_stack_alloc_init -> z_thread_malloc at kernel/stack.c:51
+
+Official documentation (full):
+Title: k_thread_stack_alloc
+Signature: k_thread_stack_t * k_thread_stack_alloc ( size_t size, int flags );
+Parameters:
+- size: size_t — Stack size in bytes.
+- flags: int — Stack creation flags, or 0.
+Return values:
+- : allocated thread stack on success.
+- : on failure.
+- : 
+- : 
+
+### Function k_stack_cleanup
+Signature: int(k_stack*)
+Location: kernel/stack.c:80-99
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/sys/check.h, zephyr/sys/math_extras.h, zephyr/syscalls/k_stack_alloc_init_mrsh.c, zephyr/syscalls/k_stack_pop_mrsh.c, zephyr/syscalls/k_stack_push_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.notEquals(), z_waitq_head(), <operator>.addressOf(), <operator>.indirectFieldAccess(), <operator>.cast(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_EXIT:ANY(4)(), <operator>.minus()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- stack: struct k_stack * — Address of the stack.
+Return values:
+- : on success
+- : when object is still in use
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_stack_cleanup (api:k_stack_cleanup:overview#c0) :: API: k_stack_cleanup Signature: int k_stack_cleanup ( struct k_stack * stack );
+
+Official documentation (full):
+Title: k_stack_cleanup
+Signature: int k_stack_cleanup ( struct k_stack * stack );
+Parameters:
+- stack: struct k_stack * — Address of the stack.
+Return values:
+- : on success
+- : when object is still in use
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

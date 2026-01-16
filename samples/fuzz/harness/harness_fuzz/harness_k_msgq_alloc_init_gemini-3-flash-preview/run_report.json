@@ -1,0 +1,19 @@
+{
+  "overall_status": "PASS",
+  "stage": "run",
+  "classification": "ok",
+  "subtype": null,
+  "details": {
+    "run": {
+      "status": "PASS",
+      "stage": "run",
+      "command": "/home/zwz/zephyr-venv/bin/west build -t run",
+      "returncode": -9,
+      "timeout": false,
+      "marker_hit": true,
+      "stdout_tail": "[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n[00:00:00.130,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000bf8 took mutex 0x20000e9c, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.130,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000e9c lock_count: 1\u001b[0m\r\n[00:00:00.130,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n\u001b[1;31m--- 1 messages dropped ---\r\n\u001b[0m[00:00:00.130,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000e9c lock_count: 1\u001b[0m\r\n[00:00:00.130,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n[00:00:00.140,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000bf8 took mutex 0x20000e9c, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.140,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000e9c lock_count: 1\u001b[0m\r\n[00:00:00.140,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n\u001b[1;31m--- 1 messages dropped ---\r\n\u001b[0m[00:00:00.140,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000e9c lock_count: 1\u001b[0m\r\n[00:00:00.140,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n[00:00:00.150,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000bf8 took mutex 0x20000e9c, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.150,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000e9c lock_count: 1\u001b[0m\r\n[00:00:00.150,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n\u001b[1;31m--- 2 messages dropped ---\r\n\u001b[0m[00:00:00.150,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n[00:00:00.160,000] \u001b[0m<dbg> os: z_impl_k_mutex_lock: 0x20000bf8 took mutex 0x20000e9c, count: 1, orig prio: 0\u001b[0m\r\n[00:00:00.160,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: mutex 0x20000e9c lock_count: 1\u001b[0m\r\n[00:00:00.160,000] \u001b[0m<dbg> os: z_impl_k_mutex_unlock: new owner of mutex 0x20000e9c: 0 (prio: -1000)\u001b[0m\r\n[TEST_CASE_COMPLETED]\r\n",
+      "stderr_tail": "qemu-system-arm: warning: nic lan9118.0 has no peer\n",
+      "log_path": "/home/zwz/rtos_fuzz_agent/src/generated_tests/fuzz/20260102_225543_k_msgq_alloc_init_gemini-3-flash-preview/run.log"
+    }
+  }
+}

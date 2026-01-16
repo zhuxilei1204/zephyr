@@ -1,0 +1,119 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: sys_clock_gettime, is_valid_clock_id, timespec_from_ticks, k_uptime_ticks, sys_clock_getrtoffset
+
+### Function sys_clock_gettime
+Signature: int(int,timespec*)
+Location: lib/os/clock.c:69-102
+Cyclomatic: -1 Lines: -1
+Includes: errno.h, stdbool.h, stddef.h, stdint.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/sys/clock.h, zephyr/sys/timeutil.h, zephyr/syscalls/sys_clock_getrtoffset_mrsh.c, zephyr/syscalls/sys_clock_nanosleep_mrsh.c, zephyr/syscalls/sys_clock_settime_mrsh.c, zephyr/toolchain.h, zephyr/ztest.h
+Outgoing calls summary: <operator>.logicalNot(), is_valid_clock_id(), <operator>.minus(), kernel/include/errno.h:EINVAL:int(0)(), kernel/include/zephyr/sys/clock.h:SYS_CLOCK_REALTIME:int(0)(), timespec_from_ticks(), k_uptime_ticks(), sys_clock_getrtoffset()
+Incoming callers count: 2
+Official docs (summary):
+Parameters:
+- clock_id: int — The clock from which to query time.
+- tp: struct timespec * — Pointer to memory where time will be written.
+Return values:
+- : on success.
+- : when an invalid clock_id is specified.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of sys_clock_getrtoffset (rel:in:sys_clock_getrtoffset#c0) :: incoming: sys_clock_gettime
+- Incoming of arch/arm/include/stdint.h:INT64_MAX:ANY(0) (rel:in:arch/arm/include/stdint.h:INT64_MAX:ANY(0)#c0) :: incoming: sys_clock_gettime
+- sys_clock_gettime (api:sys_clock_gettime:overview#c0) :: API: sys_clock_gettime Signature: int sys_clock_gettime ( int clock_id, struct timespec * tp );
+- Type sys_clock_gettime (type:sys_clock_gettime:lib/os/clock.c#c0) :: TYPE type sys_clock_gettime lib/os/clock.c sys_clock_gettime
+- Function sys_clock_gettime (func:sys_clock_gettime:lib/os/clock.c#c0) :: FUNC sys_clock_gettime int(int,timespec*) file lib/os/clock.c:69-102 
+- SYS_CLOCK_REALTIME (api:SYS_CLOCK_REALTIME:overview#c0) :: API: SYS_CLOCK_REALTIME Signature:
+
+Official documentation (full):
+Title: sys_clock_gettime
+Signature: int sys_clock_gettime ( int clock_id, struct timespec * tp );
+Parameters:
+- clock_id: int — The clock from which to query time.
+- tp: struct timespec * — Pointer to memory where time will be written.
+Return values:
+- : on success.
+- : when an invalid clock_id is specified.
+
+### Function is_valid_clock_id
+Signature: bool(int)
+Location: lib/os/clock.c:30-39
+Cyclomatic: -1 Lines: -1
+Includes: errno.h, stdbool.h, stddef.h, stdint.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/sys/clock.h, zephyr/sys/timeutil.h, zephyr/syscalls/sys_clock_getrtoffset_mrsh.c, zephyr/syscalls/sys_clock_nanosleep_mrsh.c, zephyr/syscalls/sys_clock_settime_mrsh.c, zephyr/toolchain.h, zephyr/ztest.h
+Outgoing calls summary: kernel/include/zephyr/sys/clock.h:SYS_CLOCK_MONOTONIC:int(0)(), kernel/include/zephyr/sys/clock.h:SYS_CLOCK_REALTIME:int(0)(), kernel/include/stdbool.h:true:int(0)(), kernel/include/stdbool.h:false:int(0)()
+Incoming callers count: 2
+
+### Function timespec_from_ticks
+Signature: void(uint64_t,timespec*)
+Location: lib/os/clock.c:41-51
+Cyclomatic: -1 Lines: -1
+Includes: errno.h, stdbool.h, stddef.h, stdint.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/sys/clock.h, zephyr/sys/timeutil.h, zephyr/syscalls/sys_clock_getrtoffset_mrsh.c, zephyr/syscalls/sys_clock_nanosleep_mrsh.c, zephyr/syscalls/sys_clock_settime_mrsh.c, zephyr/toolchain.h, zephyr/ztest.h
+Outgoing calls summary: <operator>.assignment(), <operator>.division(), <operator>.modulo(), <operator>.indirection(), <operator>.cast(), <operator>.arrayInitializer(), kernel/include/zephyr/sys/time_units.h:k_ticks_to_ns_floor32:ANY(1)(), <operator>.conditional()
+Incoming callers count: 2
+
+### Function k_uptime_ticks
+Signature: int64_t k_uptime_ticks ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : Current uptime in ticks.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_uptime_ticks
+Signature: int64_t k_uptime_ticks ( void );
+Return values:
+- : Current uptime in ticks.
+
+### Function sys_clock_getrtoffset
+Signature: void sys_clock_getrtoffset ( struct timespec * tp );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- tp: struct timespec * — Pointer to memory where time will be written.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: sys_clock_getrtoffset
+Signature: void sys_clock_getrtoffset ( struct timespec * tp );
+Parameters:
+- tp: struct timespec * — Pointer to memory where time will be written.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

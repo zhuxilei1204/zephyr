@@ -1,0 +1,138 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS on mps2/an385 (QEMU via west). Prefer Zephyr public APIs (k_*). Avoid introducing new infinite loops; only the provided BREAKPOINT may loop to allow the runner to stop execution after the completion marker. Do not use K_FOREVER waits inside the bounded test loop; prefer K_NO_WAIT or short timeouts. Keep memory usage small and deterministic; avoid dynamic allocation unless strictly necessary.
+Fuzz input policy: All variability MUST come from the global FUZZ_INPUT byte array. Derive parameters deterministically from FUZZ_INPUT only (no rand/time). Use the template-provided FR_* helpers (FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range/FR_next_bytes/FR_next_string) to consume FUZZ_INPUT with bounds checks and an advancing offset. Do NOT re-implement these helpers, and do NOT use generic next_* names. IMPORTANT: In this project template, FR_init has the signature: FR_Reader FR_init(const unsigned char* buf, size_t n). Correct usage: FR_Reader fr = FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE). Do NOT call FR_init with 3 arguments and do NOT pass an FR_Reader* to FR_init. Also note: the input length macro is MAX_FUZZ_INPUT_SIZE (there is no FUZZ_INPUT_SIZE). Use modulo/clamping to map raw bytes into valid RTOS ranges (priorities, ticks, sizes). Keep the template's bounded-loop structure in test_task: do NOT introduce new infinite loops or long blocking calls outside the per-iteration test_logic body. Reader discipline (FR_Reader): (1) Initialize the Fuzz Reader (FR_init) outside the per-iteration loop and let it consume FUZZ_INPUT monotonically forward across all iterations. Never reset the reader offset (e.g. 'fr.off = 0') and never re-initialize the reader inside the loop. (2) Inside the loop, always check that enough bytes remain (via FR_remaining or helper return values) before consuming; if input is exhausted or insufficient for a safe parameter set, break the loop immediately instead of falling back to hardcoded defaults or resetting the reader. (3) The purpose of the bounded loop is to explore deeper and varied states from a single FUZZ_INPUT. Avoid repeating the exact same parameter combination across iterations; each iteration should, as far as practical, consume new bytes and exercise a different configuration or state transition.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_event_post, k_event_init, k_event, K_EVENT_DEFINE, k_poll_event
+
+### Function k_event_post
+Signature: uint32_t k_event_post ( struct k_event * event, uint32_t events );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- event: struct k_event * — Address of the event object
+- events: uint32_t — Set of events to post to event
+Return values:
+- : value of the events in event
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_event (api:k_event:overview#c0) :: API: k_event Signature:
+- k_event_post (api:k_event_post:overview#c0) :: API: k_event_post Signature: uint32_t k_event_post ( struct k_event * event, uint32_t events );
+- K_EVENT_DEFINE (api:K_EVENT_DEFINE:overview#c0) :: API: K_EVENT_DEFINE Signature:
+- k_event_post (api:k_event_post:parameters#c0) :: API: k_event_post Section: parameters param event: struct k_event * Address of the event object param events: uint32_t Set of events to post to event
+- k_poll_event (api:k_poll_event:overview#c0) :: API: k_poll_event Signature:
+- k_thread (api:k_thread:overview#c0) :: API: k_thread Signature:
+
+Official documentation (full):
+Title: k_event_post
+Signature: uint32_t k_event_post ( struct k_event * event, uint32_t events );
+Parameters:
+- event: struct k_event * — Address of the event object
+- events: uint32_t — Set of events to post to event
+Return values:
+- : value of the events in event
+
+### Function k_event_init
+Signature: void k_event_init ( struct k_event * event );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- event: struct k_event * — Address of the event object.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_event_init (api:k_event_init:overview#c0) :: API: k_event_init Signature: void k_event_init ( struct k_event * event );
+- k_event_init (api:k_event_init:parameters#c0) :: API: k_event_init Section: parameters param event: struct k_event * Address of the event object.
+- k_poll_event_init (api:k_poll_event_init:overview#c0) :: API: k_poll_event_init Signature: void k_poll_event_init ( struct k_poll_event * event, uint32_t type, int mode, void * obj );
+
+Official documentation (full):
+Title: k_event_init
+Signature: void k_event_init ( struct k_event * event );
+Parameters:
+- event: struct k_event * — Address of the event object.
+
+### Function k_event
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_event (api:k_event:overview#c0) :: API: k_event Signature:
+
+Official documentation (full):
+Title: k_event
+
+### Function K_EVENT_DEFINE
+Signature: #define K_EVENT_DEFINE ( name )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_EVENT_DEFINE (api:K_EVENT_DEFINE:overview#c0) :: API: K_EVENT_DEFINE Signature:
+
+Official documentation (full):
+Title: K_EVENT_DEFINE
+Definition: #define K_EVENT_DEFINE ( name )
+Includes:
+#include <zephyr/kernel.h>
+Details (truncated):
+STRUCT_SECTION_ITERABLE(k_event, name) = Z_EVENT_INITIALIZER(name);
+Statically define and initialize an event object.
+The event can be accessed outside the module where it is defined using:
+extern struct k_event <name>;
+
+### Function k_poll_event
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_poll_event (api:k_poll_event:overview#c0) :: API: k_poll_event Signature:
+
+Official documentation (full):
+Title: k_poll_event
+Includes:
+#include <zephyr/kernel.h>
+
+Generation requirements (Zephyr):
+1) Output must be a strict JSON array without extra explanations.
+2) helper_functions can be an empty string or include static buffers/helpers; test_logic contains only function body statements.
+3) Use the template-provided FR_* helpers to consume FUZZ_INPUT with an advancing offset and bounds checks: call FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range(min,max)/FR_next_bytes(n)/FR_next_string(max_len). Do NOT re-implement these and do NOT define generic next_* names.
+   - Read at least 16 bytes overall (or as many as needed) and derive 3+ independent parameters from FUZZ_INPUT.
+   - No randomness/time: all variability must come from FUZZ_INPUT; deterministic mapping from bytes to parameters.
+4) Prefer Zephyr public APIs (k_*). Avoid K_FOREVER waits in the bounded loop; use K_NO_WAIT or short timeouts.
+5) Use __ASSERT_NO_MSG/__ASSERT or explicit condition checks; on failure paths, clean up resources or return.
+6) Keep memory deterministic and small; avoid dynamic allocation unless strictly necessary.
+7) Choose a suitable api_category for the target function (e.g., fifo, semaphore, thread, timers, kernel).
+8) The harness template will run test_logic inside a bounded for-loop in test_task; do NOT add extra infinite loops or long blocking calls around it, and do NOT modify outer wrappers provided by the template.
+9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

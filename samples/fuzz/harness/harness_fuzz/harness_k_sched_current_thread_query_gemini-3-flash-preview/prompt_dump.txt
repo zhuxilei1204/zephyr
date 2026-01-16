@@ -1,0 +1,88 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_sched_current_thread_query, k_msgq_get, Type, Call, Include
+
+### Function k_sched_current_thread_query
+Signature: __attribute_const__ k_tid_t k_sched_current_thread_query ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : ID of current thread.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_sched_current_thread_query (api:k_sched_current_thread_query:overview#c0) :: API: k_sched_current_thread_query Signature: __attribute_const__ k_tid_t k_sched_current_thread_query ( void );
+- Type z_impl_k_sched_current_thread_query (type:z_impl_k_sched_current_thread_query:kernel/sched.c#c0) :: TYPE type z_impl_k_sched_current_thread_query kernel/sched.c z_impl_k_sched_current_thread_query
+- Call z_impl_k_sched_current_thread_query -> kernel/include/zephyr/kernel_structs.h:_current:_cpu(0) (edge:z_impl_k_sched_current_thread_query->kernel/include/zephyr/kernel_structs.h:_current:_cpu(0):kernel/sched.c:1215#c0) :: Call: z_impl_k_sched_current_thread_query -> kernel/include/zephyr/kernel_structs.h:_current:_cpu(0) at kernel/sched.c:1215
+- Call z_impl_k_sched_current_thread_query -> <operator>.indirectIndexAccess (edge:z_impl_k_sched_current_thread_query-><operator>.indirectIndexAccess:kernel/sched.c:1215#c0) :: Call: z_impl_k_sched_current_thread_query -> <operator>.indirectIndexAccess at kernel/sched.c:1215
+- Include zephyr/syscalls/k_sched_current_thread_query_mrsh.c (include:kernel/sched.c->zephyr/syscalls/k_sched_current_thread_query_mrsh.c#c0) :: Include: kernel/sched.c -> zephyr/syscalls/k_sched_current_thread_query_mrsh.c
+- Function z_impl_k_sched_current_thread_query (func:z_impl_k_sched_current_thread_query:kernel/sched.c#c0) :: FUNC z_impl_k_sched_current_thread_query k_tid_t(void) file kernel/sched.c:1213-1216 
+
+Official documentation (full):
+Title: k_sched_current_thread_query
+Signature: __attribute_const__ k_tid_t k_sched_current_thread_query ( void );
+Return values:
+- : ID of current thread.
+
+### Function k_msgq_get
+Signature: int k_msgq_get ( struct k_msgq * msgq, void * data, k_timeout_t timeout );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- data: void * — Address of area to hold the received message.
+- timeout: k_timeout_t — Waiting period to receive the message, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Message received.
+- : Returned without waiting or queue purged.
+- : Waiting period timed out.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_msgq_get
+Signature: int k_msgq_get ( struct k_msgq * msgq, void * data, k_timeout_t timeout );
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- data: void * — Address of area to hold the received message.
+- timeout: k_timeout_t — Waiting period to receive the message, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Message received.
+- : Returned without waiting or queue purged.
+- : Waiting period timed out.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

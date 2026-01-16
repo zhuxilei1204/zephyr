@@ -1,0 +1,156 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_obj_core_stats_query, k_obj_core, k_obj_core_stats_desc, K_OBJ_CORE, k_obj_core_stats_raw
+
+### Function k_obj_core_stats_query
+Signature: int k_obj_core_stats_query ( struct k_obj_core * obj_core, void * stats, size_t stats_len );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- obj_core: struct k_obj_core * — Pointer to kernel object core
+- stats: void * — Pointer to memory buffer into which to copy the queried stats
+- stats_len: size_t — Length of the memory buffer
+Return values:
+- : on success
+- : on failure
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_obj_core_stats_desc (api:k_obj_core_stats_desc:overview#c0) :: API: k_obj_core_stats_desc Signature:
+- k_obj_core_stats_query (api:k_obj_core_stats_query:overview#c0) :: API: k_obj_core_stats_query Signature: int k_obj_core_stats_query ( struct k_obj_core * obj_core, void * stats, size_t stats_len );
+- k_obj_core (api:k_obj_core:overview#c0) :: API: k_obj_core Signature:
+- K_OBJ_CORE (api:K_OBJ_CORE:overview#c0) :: API: K_OBJ_CORE Signature:
+- k_obj_core_stats_query (api:k_obj_core_stats_query:parameters#c0) :: API: k_obj_core_stats_query Section: parameters param obj_core: struct k_obj_core * Pointer to kernel object core param stats: void * Pointer to memory buffer into which to copy the queried stats param stats_len: size_t Length of the memory buffer
+- k_obj_core_stats_raw (api:k_obj_core_stats_raw:overview#c0) :: API: k_obj_core_stats_raw Signature: int k_obj_core_stats_raw ( struct k_obj_core * obj_core, void * stats, size_t stats_len );
+
+Official documentation (full):
+Title: k_obj_core_stats_query
+Signature: int k_obj_core_stats_query ( struct k_obj_core * obj_core, void * stats, size_t stats_len );
+Parameters:
+- obj_core: struct k_obj_core * — Pointer to kernel object core
+- stats: void * — Pointer to memory buffer into which to copy the queried stats
+- stats_len: size_t — Length of the memory buffer
+Return values:
+- : on success
+- : on failure
+
+### Function k_obj_core
+Signature: #define K_OBJ_CORE ( kobj )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/obj_core.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: K_OBJ_CORE
+Definition: #define K_OBJ_CORE ( kobj )
+Includes:
+#include <zephyr/kernel/obj_core.h>
+Details:
+(&((kobj)->obj_core)) Convert kernel object pointer into its object core pointer.
+
+### Function k_obj_core_stats_desc
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/obj_core.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_obj_core_stats_desc (api:k_obj_core_stats_desc:overview#c0) :: API: k_obj_core_stats_desc Signature:
+
+Official documentation (full):
+Title: k_obj_core_stats_desc
+Includes:
+#include <zephyr/kernel/obj_core.h>
+
+### Function K_OBJ_CORE
+Signature: #define K_OBJ_CORE ( kobj )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/obj_core.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_OBJ_CORE (api:K_OBJ_CORE:overview#c0) :: API: K_OBJ_CORE Signature:
+
+Official documentation (full):
+Title: K_OBJ_CORE
+Definition: #define K_OBJ_CORE ( kobj )
+Includes:
+#include <zephyr/kernel/obj_core.h>
+Details (truncated):
+(&((kobj)->obj_core)) Convert kernel object pointer into its object core pointer.
+
+### Function k_obj_core_stats_raw
+Signature: int k_obj_core_stats_raw ( struct k_obj_core * obj_core, void * stats, size_t stats_len );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- obj_core: struct k_obj_core * — Pointer to kernel object core
+- stats: void * — Pointer to memory buffer into which to copy raw stats
+- stats_len: size_t — Length of the memory buffer
+Return values:
+- : on success
+- : on failure
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_obj_core_stats_raw (api:k_obj_core_stats_raw:overview#c0) :: API: k_obj_core_stats_raw Signature: int k_obj_core_stats_raw ( struct k_obj_core * obj_core, void * stats, size_t stats_len );
+
+Official documentation (full):
+Title: k_obj_core_stats_raw
+Signature: int k_obj_core_stats_raw ( struct k_obj_core * obj_core, void * stats, size_t stats_len );
+Parameters:
+- obj_core: struct k_obj_core * — Pointer to kernel object core
+- stats: void * — Pointer to memory buffer into which to copy raw stats
+- stats_len: size_t — Length of the memory buffer
+Return values:
+- : on success
+- : on failure
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

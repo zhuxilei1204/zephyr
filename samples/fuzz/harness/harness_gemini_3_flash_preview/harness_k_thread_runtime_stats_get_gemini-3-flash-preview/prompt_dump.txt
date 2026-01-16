@@ -1,0 +1,59 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS on mps2/an385 (QEMU via west). Prefer Zephyr public APIs (k_*). Avoid introducing new infinite loops; only the provided BREAKPOINT may loop to allow the runner to stop execution after the completion marker. Do not use K_FOREVER waits inside the bounded test loop; prefer K_NO_WAIT or short timeouts. Keep memory usage small and deterministic; avoid dynamic allocation unless strictly necessary.
+Fuzz input policy: All variability MUST come from the global FUZZ_INPUT byte array. Derive parameters deterministically from FUZZ_INPUT only (no rand/time). Use the template-provided FR_* helpers (FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range/FR_next_bytes/FR_next_string) to consume FUZZ_INPUT with bounds checks and an advancing offset. Do NOT re-implement these helpers, and do NOT use generic next_* names. IMPORTANT: In this project template, FR_init has the signature: FR_Reader FR_init(const unsigned char* buf, size_t n). Correct usage: FR_Reader fr = FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE). Do NOT call FR_init with 3 arguments and do NOT pass an FR_Reader* to FR_init. Also note: the input length macro is MAX_FUZZ_INPUT_SIZE (there is no FUZZ_INPUT_SIZE). Use modulo/clamping to map raw bytes into valid RTOS ranges (priorities, ticks, sizes). Keep the template's bounded-loop structure in test_task: do NOT introduce new infinite loops or long blocking calls outside the per-iteration test_logic body. Reader discipline (FR_Reader): (1) Initialize the Fuzz Reader (FR_init) outside the per-iteration loop and let it consume FUZZ_INPUT monotonically forward across all iterations. Never reset the reader offset (e.g. 'fr.off = 0') and never re-initialize the reader inside the loop. (2) Inside the loop, always check that enough bytes remain (via FR_remaining or helper return values) before consuming; if input is exhausted or insufficient for a safe parameter set, break the loop immediately instead of falling back to hardcoded defaults or resetting the reader. (3) The purpose of the bounded loop is to explore deeper and varied states from a single FUZZ_INPUT. Avoid repeating the exact same parameter combination across iterations; each iteration should, as far as practical, consume new bytes and exercise a different configuration or state transition.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_thread_runtime_stats_get, k_current_get, Type, Function, Call
+
+### Function k_thread_runtime_stats_get
+Signature: int(k_tid_t,k_thread_runtime_stats_t*)
+Location: kernel/thread.c:1015-1029
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, kswap.h, kthread.h, stdbool.h, string.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/llext/symbol.h, zephyr/logging/log.h, zephyr/random/random.h, zephyr/spinlock.h, zephyr/sys/atomic.h, zephyr/sys/check.h, zephyr/sys/iterable_sections.h, zephyr/sys/math_extras.h, zephyr/sys_clock.h, zephyr/syscalls/k_is_preempt_thread_mrsh.c, zephyr/syscalls/k_thread_create_mrsh.c, zephyr/syscalls/k_thread_custom_data_get_mrsh.c, zephyr/syscalls/k_thread_custom_data_set_mrsh.c, zephyr/syscalls/k_thread_name_copy_mrsh.c, zephyr/syscalls/k_thread_name_set_mrsh.c, zephyr/syscalls/k_thread_priority_get_mrsh.c, zephyr/syscalls/k_thread_stack_space_get_mrsh.c, zephyr/syscalls/k_thread_timeout_expires_ticks_mrsh.c, zephyr/syscalls/k_thread_timeout_remaining_ticks_mrsh.c, zephyr/tracing/tracing.h
+Outgoing calls summary: <operator>.logicalOr(), <operator>.equals(), /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:NULL:ANY(0)(), <operator>.cast(), <operator>.minus(), kernel/include/errno.h:EINVAL:int(0)(), <operator>.assignment(), <operator>.indirection()
+Incoming callers count: 0
+Reference snippets:
+- Type k_thread_runtime_stats_get (type:k_thread_runtime_stats_get:kernel/thread.c#c0) :: TYPE type k_thread_runtime_stats_get kernel/thread.c k_thread_runtime_stats_get
+- Function k_thread_runtime_stats_get (func:k_thread_runtime_stats_get:kernel/thread.c#c0) :: FUNC k_thread_runtime_stats_get int(k_tid_t,k_thread_runtime_stats_t*) file kernel/thread.c:1015-1029 
+- Function Summary k_thread_runtime_stats_get (funcsum:k_thread_runtime_stats_get:kernel/thread.c:1015-1029#c0) :: FUNC_SUMMARY k_thread_runtime_stats_get Signature: int(k_tid_t,k_thread_runtime_stats_t*) Location: kernel/thread.c:1015-1029 Parameters: k_tid_t thread, k_thread_runtime_stats_t* stats Metrics: cyclomatic=-1 nloc=-1
+- Call k_thread_runtime_stats_get -> <operator>.indirection (edge:k_thread_runtime_stats_get-><operator>.indirection:kernel/thread.c:1025#c0) :: Call: k_thread_runtime_stats_get -> <operator>.indirection at kernel/thread.c:1025
+- Function k_thread_runtime_stats_cpu_get (func:k_thread_runtime_stats_cpu_get:kernel/thread.c#c0) :: FUNC k_thread_runtime_stats_cpu_get int(int,k_thread_runtime_stats_t*) file kernel/thread.c:1065-1084 
+- Call k_thread_runtime_stats_get -> kernel/include/errno.h:EINVAL:int(0) (edge:k_thread_runtime_stats_get->kernel/include/errno.h:EINVAL:int(0):kernel/thread.c:1019#c0) :: Call: k_thread_runtime_stats_get -> kernel/include/errno.h:EINVAL:int(0) at kernel/thread.c:1019
+
+### Function k_current_get
+Signature: __attribute_const__ k_tid_t k_current_get ( void );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Return values:
+- : ID of current thread.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_current_get
+Signature: __attribute_const__ k_tid_t k_current_get ( void );
+Return values:
+- : ID of current thread.
+
+Generation requirements (Zephyr):
+1) Output must be a strict JSON array without extra explanations.
+2) helper_functions can be an empty string or include static buffers/helpers; test_logic contains only function body statements.
+3) Use the template-provided FR_* helpers to consume FUZZ_INPUT with an advancing offset and bounds checks: call FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range(min,max)/FR_next_bytes(n)/FR_next_string(max_len). Do NOT re-implement these and do NOT define generic next_* names.
+   - Read at least 16 bytes overall (or as many as needed) and derive 3+ independent parameters from FUZZ_INPUT.
+   - No randomness/time: all variability must come from FUZZ_INPUT; deterministic mapping from bytes to parameters.
+4) Prefer Zephyr public APIs (k_*). Avoid K_FOREVER waits in the bounded loop; use K_NO_WAIT or short timeouts.
+5) Use __ASSERT_NO_MSG/__ASSERT or explicit condition checks; on failure paths, clean up resources or return.
+6) Keep memory deterministic and small; avoid dynamic allocation unless strictly necessary.
+7) Choose a suitable api_category for the target function (e.g., fifo, semaphore, thread, timers, kernel).
+8) The harness template will run test_logic inside a bounded for-loop in test_task; do NOT add extra infinite loops or long blocking calls around it, and do NOT modify outer wrappers provided by the template.
+9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

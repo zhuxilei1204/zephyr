@@ -1,0 +1,152 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_msgq_alloc_init, z_impl_k_condvar_wait, k_spin_lock, k_msgq_cleanup, k_msgq_put
+
+### Function k_msgq_alloc_init
+Signature: int k_msgq_alloc_init ( struct k_msgq * msgq, size_t msg_size, uint32_t max_msgs );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- msg_size: size_t — Message size (in bytes).
+- max_msgs: uint32_t — Maximum number of messages that can be queued.
+Return values:
+- : 0 on success, -ENOMEM if there was insufficient memory in the thread's resource pool, or -EINVAL if the size parameters cause an integer overflow.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_msgq_alloc_init (api:k_msgq_alloc_init:overview#c0) :: API: k_msgq_alloc_init Signature: int k_msgq_alloc_init ( struct k_msgq * msgq, size_t msg_size, uint32_t max_msgs );
+- k_msgq_init (api:k_msgq_init:overview#c0) :: API: k_msgq_init Signature: void k_msgq_init ( struct k_msgq * msgq, char * buffer, size_t msg_size, uint32_t max_msgs );
+- Function z_impl_k_msgq_alloc_init (func:z_impl_k_msgq_alloc_init:kernel/msg_q.c#c0) :: FUNC z_impl_k_msgq_alloc_init int(k_msgq*,size_t,uint32_t) file kernel/msg_q.c:69-93 
+- k_msgq_alloc_init (api:k_msgq_alloc_init:parameters#c0) :: API: k_msgq_alloc_init Section: parameters param msgq: struct k_msgq * Address of the message queue. param msg_size: size_t Message size (in bytes). param max_msgs: uint32_t Maximum number of messages that can be queued.
+- Call k_msgq_init -> <operator>.assignment (edge:k_msgq_init-><operator>.assignment:kernel/msg_q.c:51#c0) :: Call: k_msgq_init -> <operator>.assignment at kernel/msg_q.c:51
+- Call k_msgq_init -> <operator>.assignment (edge:k_msgq_init-><operator>.assignment:kernel/msg_q.c:46#c0) :: Call: k_msgq_init -> <operator>.assignment at kernel/msg_q.c:46
+
+Official documentation (full):
+Title: k_msgq_alloc_init
+Signature: int k_msgq_alloc_init ( struct k_msgq * msgq, size_t msg_size, uint32_t max_msgs );
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- msg_size: size_t — Message size (in bytes).
+- max_msgs: uint32_t — Maximum number of messages that can be queued.
+Return values:
+- : 0 on success, -ENOMEM if there was insufficient memory in the thread's resource pool, or -EINVAL if the size parameters cause an integer overflow.
+
+### Function z_impl_k_condvar_wait
+Signature: int(k_condvar*,k_mutex*,k_timeout_t)
+Location: kernel/condvar.c:114-131
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/syscalls/k_condvar_broadcast_mrsh.c, zephyr/syscalls/k_condvar_init_mrsh.c, zephyr/syscalls/k_condvar_signal_mrsh.c, zephyr/syscalls/k_condvar_wait_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.assignment(), k_spin_lock(), <operator>.addressOf(), k_mutex_unlock(), z_pend_curr(), <operator>.indirectFieldAccess(), k_mutex_lock()
+Incoming callers count: 0
+
+### Function k_spin_lock
+Signature: ALWAYS_INLINE k_spinlock_key_t k_spin_lock ( struct k_spinlock * l );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- l: struct k_spinlock * — A pointer to the spinlock to lock
+Return values:
+- : A key value that must be passed to k_spin_unlock() when the lock is released.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_spin_lock
+Signature: ALWAYS_INLINE k_spinlock_key_t k_spin_lock ( struct k_spinlock * l );
+Parameters:
+- l: struct k_spinlock * — A pointer to the spinlock to lock
+Return values:
+- : A key value that must be passed to k_spin_unlock() when the lock is released.
+
+### Function k_msgq_cleanup
+Signature: int(k_msgq*)
+Location: kernel/msg_q.c:106-124
+Cyclomatic: -1 Lines: -1
+Includes: kernel_internal.h, ksched.h, string.h, wait_q.h, zephyr/init.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/kernel_structs.h, zephyr/linker/sections.h, zephyr/sys/check.h, zephyr/sys/dlist.h, zephyr/sys/math_extras.h, zephyr/syscalls/k_msgq_alloc_init_mrsh.c, zephyr/syscalls/k_msgq_get_attrs_mrsh.c, zephyr/syscalls/k_msgq_get_mrsh.c, zephyr/syscalls/k_msgq_num_free_get_mrsh.c, zephyr/syscalls/k_msgq_num_used_get_mrsh.c, zephyr/syscalls/k_msgq_peek_at_mrsh.c, zephyr/syscalls/k_msgq_peek_mrsh.c, zephyr/syscalls/k_msgq_purge_mrsh.c, zephyr/syscalls/k_msgq_put_front_mrsh.c, zephyr/syscalls/k_msgq_put_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: <operator>.assignment(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.notEquals(), z_waitq_head(), <operator>.addressOf(), <operator>.indirectFieldAccess(), <operator>.cast(), <operator>.minus()
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — message queue to cleanup
+Return values:
+- : on success
+- : Queue not empty
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_msgq_cleanup
+Signature: int k_msgq_cleanup ( struct k_msgq * msgq );
+Parameters:
+- msgq: struct k_msgq * — message queue to cleanup
+Return values:
+- : on success
+- : Queue not empty
+
+### Function k_msgq_put
+Signature: int k_msgq_put ( struct k_msgq * msgq, const void * data, k_timeout_t timeout );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- data: const void * — Pointer to the message.
+- timeout: k_timeout_t — Waiting period to add the message, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Message sent.
+- : Returned without waiting or queue purged.
+- : Waiting period timed out.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_msgq_put
+Signature: int k_msgq_put ( struct k_msgq * msgq, const void * data, k_timeout_t timeout );
+Parameters:
+- msgq: struct k_msgq * — Address of the message queue.
+- data: const void * — Pointer to the message.
+- timeout: k_timeout_t — Waiting period to add the message, or one of the special values K_NO_WAIT and K_FOREVER.
+Return values:
+- : Message sent.
+- : Returned without waiting or queue purged.
+- : Waiting period timed out.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

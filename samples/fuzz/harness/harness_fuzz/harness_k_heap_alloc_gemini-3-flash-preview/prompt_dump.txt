@@ -1,0 +1,152 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS on mps2/an385 (QEMU via west). Prefer Zephyr public APIs (k_*). Avoid introducing new infinite loops; only the provided BREAKPOINT may loop to allow the runner to stop execution after the completion marker. Do not use K_FOREVER waits inside the bounded test loop; prefer K_NO_WAIT or short timeouts. Keep memory usage small and deterministic; avoid dynamic allocation unless strictly necessary.
+Fuzz input policy: All variability MUST come from the global FUZZ_INPUT byte array. Derive parameters deterministically from FUZZ_INPUT only (no rand/time). Use the template-provided FR_* helpers (FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range/FR_next_bytes/FR_next_string) to consume FUZZ_INPUT with bounds checks and an advancing offset. Do NOT re-implement these helpers, and do NOT use generic next_* names. IMPORTANT: In this project template, FR_init has the signature: FR_Reader FR_init(const unsigned char* buf, size_t n). Correct usage: FR_Reader fr = FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE). Do NOT call FR_init with 3 arguments and do NOT pass an FR_Reader* to FR_init. Also note: the input length macro is MAX_FUZZ_INPUT_SIZE (there is no FUZZ_INPUT_SIZE). Use modulo/clamping to map raw bytes into valid RTOS ranges (priorities, ticks, sizes). Keep the template's bounded-loop structure in test_task: do NOT introduce new infinite loops or long blocking calls outside the per-iteration test_logic body. Reader discipline (FR_Reader): (1) Initialize the Fuzz Reader (FR_init) outside the per-iteration loop and let it consume FUZZ_INPUT monotonically forward across all iterations. Never reset the reader offset (e.g. 'fr.off = 0') and never re-initialize the reader inside the loop. (2) Inside the loop, always check that enough bytes remain (via FR_remaining or helper return values) before consuming; if input is exhausted or insufficient for a safe parameter set, break the loop immediately instead of falling back to hardcoded defaults or resetting the reader. (3) The purpose of the bounded loop is to explore deeper and varied states from a single FUZZ_INPUT. Avoid repeating the exact same parameter combination across iterations; each iteration should, as far as practical, consume new bytes and exercise a different configuration or state transition.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_heap_alloc, z_heap_alloc_helper, sys_timepoint_calc, k_heap_init, k_heap_free
+
+### Function k_heap_alloc
+Signature: void*(k_heap*,size_t,k_timeout_t)
+Location: kernel/kheap.c:119-129
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_ENTER:ANY(4)(), <operator>.assignment(), z_heap_alloc_helper(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC_EXIT:ANY(4)()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- h: struct k_heap * — Heap from which to allocate
+- bytes: size_t — Desired size of block to allocate
+- timeout: k_timeout_t — How long to wait, or K_NO_WAIT
+Return values:
+- : A pointer to valid heap memory, or NULL
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Type k_heap_alloc (type:k_heap_alloc:kernel/kheap.c#c0) :: TYPE type k_heap_alloc kernel/kheap.c k_heap_alloc
+- Incoming of k_heap_alloc (rel:in:k_heap_alloc#c0) :: incoming: k_heap_calloc
+- Call k_heap_calloc -> k_heap_alloc (edge:k_heap_calloc->k_heap_alloc:kernel/kheap.c:165#c0) :: Call: k_heap_calloc -> k_heap_alloc at kernel/kheap.c:165
+- Incoming of z_heap_alloc_helper (rel:in:z_heap_alloc_helper#c0) :: incoming: k_heap_aligned_alloc, k_heap_alloc
+- Type k_heap_calloc (type:k_heap_calloc:kernel/kheap.c#c0) :: TYPE type k_heap_calloc kernel/kheap.c k_heap_calloc
+- K_HEAP_DEFINE (api:K_HEAP_DEFINE:overview#c0) :: API: K_HEAP_DEFINE Signature:
+
+Official documentation (full):
+Title: k_heap_alloc
+Signature: void * k_heap_alloc ( struct k_heap * h, size_t bytes, k_timeout_t timeout );
+Parameters:
+- h: struct k_heap * — Heap from which to allocate
+- bytes: size_t — Desired size of block to allocate
+- timeout: k_timeout_t — How long to wait, or K_NO_WAIT
+Return values:
+- : A pointer to valid heap memory, or NULL
+
+### Function z_heap_alloc_helper
+Signature: void*(k_heap*,size_t,size_t,k_timeout_t,sys_heap_allocator_t*)
+Location: kernel/kheap.c:79-117
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: <operator>.assignment(), sys_timepoint_calc(), /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h:NULL:ANY(0)(), <operator>.cast(), k_spin_lock(), <operator>.addressOf(), <operator>.indirectFieldAccess(), kernel/include/zephyr/sys/__assert.h:__ASSERT:ANY(3)()
+Incoming callers count: 2
+
+### Function sys_timepoint_calc
+Signature: k_timepoint_t(k_timeout_t)
+Location: kernel/timeout.c:313-332
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, timeout_q.h, zephyr/drivers/timer/system_timer.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/spinlock.h, zephyr/sys_clock.h, zephyr/syscalls/k_uptime_ticks_mrsh.c, zephyr/syscalls/sys_clock_hw_cycles_per_sec_runtime_get_mrsh.c
+Outgoing calls summary: kernel/include/zephyr/sys/clock.h:K_TIMEOUT_EQ:ANY(2)(), <operator>.equals(), <operator>.fieldAccess(), <operator>.cast(), <operator>.arrayInitializer(), <operator>.assignment(), <operator>.minus(), arch/arm/include/stdint.h:UINT64_MAX:ANY(0)()
+Incoming callers count: 5
+Official docs (summary):
+Parameters:
+- timeout: k_timeout_t — Timeout value relative to current time (may also be K_FOREVER or K_NO_WAIT).
+Return values:
+- : value corresponding to given timeout
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: sys_timepoint_calc
+Signature: k_timepoint_t sys_timepoint_calc ( k_timeout_t timeout );
+Parameters:
+- timeout: k_timeout_t — Timeout value relative to current time (may also be K_FOREVER or K_NO_WAIT).
+Return values:
+- : value corresponding to given timeout
+
+### Function k_heap_init
+Signature: void(k_heap*,void*,size_t)
+Location: kernel/kheap.c:26-33
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: z_waitq_init(), <operator>.addressOf(), <operator>.indirectFieldAccess(), <operator>.assignment(), <operator>.cast(), <operator>.arrayInitializer(), sys_heap_init(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_INIT:ANY(3)()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- h: struct k_heap * — Heap struct to initialize
+- mem: void * — Pointer to memory.
+- bytes: size_t — Size of memory region, in bytes
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of sys_heap_init (rel:in:sys_heap_init#c0) :: incoming: k_heap_init
+- k_heap_init (api:k_heap_init:overview#c0) :: API: k_heap_init Signature: void k_heap_init ( struct k_heap * h, void * mem, size_t bytes );
+- k_heap (api:k_heap:overview#c0) :: API: k_heap Signature:
+- Call k_heap_init -> <operator>.assignment (edge:k_heap_init-><operator>.assignment:kernel/kheap.c:29#c0) :: Call: k_heap_init -> <operator>.assignment at kernel/kheap.c:29
+- Function k_heap_init (func:k_heap_init:kernel/kheap.c#c0) :: FUNC k_heap_init void(k_heap*,void*,size_t) file kernel/kheap.c:26-33 
+- Type k_heap_init (type:k_heap_init:kernel/kheap.c#c0) :: TYPE type k_heap_init kernel/kheap.c k_heap_init
+
+Official documentation (full):
+Title: k_heap_init
+Signature: void k_heap_init ( struct k_heap * h, void * mem, size_t bytes );
+Parameters:
+- h: struct k_heap * — Heap struct to initialize
+- mem: void * — Pointer to memory.
+- bytes: size_t — Size of memory region, in bytes
+
+### Function k_heap_free
+Signature: void(k_heap*,void*)
+Location: kernel/kheap.c:206-218
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, wait_q.h, zephyr/init.h, zephyr/kernel.h, zephyr/linker/linker-defs.h, zephyr/sys/iterable_sections.h
+Outgoing calls summary: <operator>.assignment(), k_spin_lock(), <operator>.addressOf(), <operator>.indirectFieldAccess(), sys_heap_free(), kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_OBJ_FUNC:ANY(4)(), <operator>.logicalAnd(), kernel/include/zephyr/sys/util_macro.h:IS_ENABLED:int(1)()
+Incoming callers count: 1
+Official docs (summary):
+Parameters:
+- h: struct k_heap * — Heap to which to return the memory
+- mem: void * — A valid memory block, or NULL
+Return values:
+- : the specified memory block, which must have been returned from k_heap_alloc(), to the heap for use by other callers. Passing a NULL block is legal, and has no effect.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Incoming of z_unpend_all (rel:in:z_unpend_all#c0) :: incoming: k_heap_free
+- Type k_heap_free (type:k_heap_free:kernel/kheap.c#c0) :: TYPE type k_heap_free kernel/kheap.c k_heap_free
+- k_heap_free (api:k_heap_free:overview#c0) :: API: k_heap_free Signature: void k_heap_free ( struct k_heap * h, void * mem );
+- k_heap (api:k_heap:overview#c0) :: API: k_heap Signature:
+- Function k_heap_free (func:k_heap_free:kernel/kheap.c#c0) :: FUNC k_heap_free void(k_heap*,void*) file kernel/kheap.c:206-218 
+- Call k_heap_free -> sys_heap_free (edge:k_heap_free->sys_heap_free:kernel/kheap.c:210#c0) :: Call: k_heap_free -> sys_heap_free at kernel/kheap.c:210
+
+Official documentation (full):
+Title: k_heap_free
+Signature: void k_heap_free ( struct k_heap * h, void * mem );
+Parameters:
+- h: struct k_heap * — Heap to which to return the memory
+- mem: void * — A valid memory block, or NULL
+Return values:
+- : the specified memory block, which must have been returned from k_heap_alloc(), to the heap for use by other callers. Passing a NULL block is legal, and has no effect.
+
+Generation requirements (Zephyr):
+1) Output must be a strict JSON array without extra explanations.
+2) helper_functions can be an empty string or include static buffers/helpers; test_logic contains only function body statements.
+3) Use the template-provided FR_* helpers to consume FUZZ_INPUT with an advancing offset and bounds checks: call FR_init/FR_next_u8/FR_next_u16/FR_next_u32/FR_next_s32/FR_next_range(min,max)/FR_next_bytes(n)/FR_next_string(max_len). Do NOT re-implement these and do NOT define generic next_* names.
+   - Read at least 16 bytes overall (or as many as needed) and derive 3+ independent parameters from FUZZ_INPUT.
+   - No randomness/time: all variability must come from FUZZ_INPUT; deterministic mapping from bytes to parameters.
+4) Prefer Zephyr public APIs (k_*). Avoid K_FOREVER waits in the bounded loop; use K_NO_WAIT or short timeouts.
+5) Use __ASSERT_NO_MSG/__ASSERT or explicit condition checks; on failure paths, clean up resources or return.
+6) Keep memory deterministic and small; avoid dynamic allocation unless strictly necessary.
+7) Choose a suitable api_category for the target function (e.g., fifo, semaphore, thread, timers, kernel).
+8) The harness template will run test_logic inside a bounded for-loop in test_task; do NOT add extra infinite loops or long blocking calls around it, and do NOT modify outer wrappers provided by the template.
+9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

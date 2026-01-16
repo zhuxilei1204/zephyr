@@ -1,0 +1,118 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_futex_wait, adc_get_decoder, DT_N_S_pinctrl_S_sbcon1_default_FOREACH_CHILD_STATUS_OKAY, z_impl_uart_irq_err_disable, K_NO_WAIT
+
+### Function k_futex_wait
+Signature: int k_futex_wait ( struct k_futex * futex, int expected, k_timeout_t timeout );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- futex: struct k_futex * — Address of the futex.
+- expected: int — Expected value of the futex, if it is different the caller will not wait on it.
+- timeout: k_timeout_t — Waiting period on the futex, or one of the special values K_NO_WAIT or K_FOREVER.
+Return values:
+- : Caller does not have read access to futex address.
+- : If the futex value did not match the expected parameter.
+- : Futex parameter address not recognized by the kernel.
+- : Thread woke up due to timeout and not a futex wakeup.
+- : if the caller went to sleep and was woken up. The caller should check the futex's value on wakeup to determine if it needs to block again.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_futex_wait (api:k_futex_wait:overview#c0) :: API: k_futex_wait Signature: int k_futex_wait ( struct k_futex * futex, int expected, k_timeout_t timeout );
+- k_futex_wait (api:k_futex_wait:parameters#c0) :: API: k_futex_wait Section: parameters param futex: struct k_futex * Address of the futex. param expected: int Expected value of the futex, if it is different the caller will not wait on it. param timeout: k_timeout_t Waiting period on the futex, or one of the special values K_NO_WAIT or K_FOREVER.
+- K_NO_WAIT (api:K_NO_WAIT:overview#c0) :: API: K_NO_WAIT Signature:
+- Incoming of k_mutex_unlock (rel:in:k_mutex_unlock#c0) :: incoming: z_impl_k_condvar_wait
+- Incoming of k_mutex_lock (rel:in:k_mutex_lock#c0) :: incoming: z_impl_k_condvar_wait
+- Function K_FOREVER (func:K_FOREVER:kernel/condvar.c#c0) :: FUNC K_FOREVER ANY(0) file kernel/condvar.c:1554-1554 
+
+Official documentation (full):
+Title: k_futex_wait
+Signature: int k_futex_wait ( struct k_futex * futex, int expected, k_timeout_t timeout );
+Parameters:
+- futex: struct k_futex * — Address of the futex.
+- expected: int — Expected value of the futex, if it is different the caller will not wait on it.
+- timeout: k_timeout_t — Waiting period on the futex, or one of the special values K_NO_WAIT or K_FOREVER.
+Return values:
+- : Caller does not have read access to futex address.
+- : If the futex value did not match the expected parameter.
+- : Futex parameter address not recognized by the kernel.
+- : Thread woke up due to timeout and not a futex wakeup.
+- : if the caller went to sleep and was woken up. The caller should check the futex's value on wakeup to determine if it needs to block again.
+
+### Function adc_get_decoder
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function DT_N_S_pinctrl_S_sbcon1_default_FOREACH_CHILD_STATUS_OKAY
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function z_impl_uart_irq_err_disable
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function K_NO_WAIT
+Signature: ANY(0)
+Location: kernel/timeout.c:1444-1444
+Cyclomatic: -1 Lines: -1
+Includes: ksched.h, timeout_q.h, zephyr/drivers/timer/system_timer.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/spinlock.h, zephyr/sys_clock.h, zephyr/syscalls/k_uptime_ticks_mrsh.c, zephyr/syscalls/sys_clock_hw_cycles_per_sec_runtime_get_mrsh.c, #include <zephyr/kernel.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_NO_WAIT (api:K_NO_WAIT:overview#c0) :: API: K_NO_WAIT Signature:
+
+Official documentation (full):
+Title: K_NO_WAIT
+Definition: #define K_NO_WAIT Z_TIMEOUT_NO_WAIT
+Includes:
+#include <zephyr/kernel.h>
+Details (truncated):
+Z_TIMEOUT_NO_WAIT
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

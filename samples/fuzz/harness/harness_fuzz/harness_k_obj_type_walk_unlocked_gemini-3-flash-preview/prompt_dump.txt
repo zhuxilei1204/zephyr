@@ -1,0 +1,138 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_obj_type_walk_unlocked, k_obj_type_walk_locked, k_thread_foreach_unlocked, k_obj_core
+
+### Function k_obj_type_walk_unlocked
+Signature: int k_obj_type_walk_unlocked ( struct k_obj_type * type, int(* func );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- type: struct k_obj_type * — Pointer to the object type
+- func: int(* — Callback to invoke on each object core of the object type
+- data:  — Custom data passed to the callback
+Return values:
+- : if walk is terminated by the callback; otherwise 0
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_obj_type_walk_unlocked (api:k_obj_type_walk_unlocked:overview#c0) :: API: k_obj_type_walk_unlocked Signature: int k_obj_type_walk_unlocked ( struct k_obj_type * type, int(* func );
+- k_obj_type_walk_locked (api:k_obj_type_walk_locked:overview#c0) :: API: k_obj_type_walk_locked Signature: int k_obj_type_walk_locked ( struct k_obj_type * type, int(* func );
+- k_obj_type_walk_unlocked (api:k_obj_type_walk_unlocked:parameters#c0) :: API: k_obj_type_walk_unlocked Section: parameters param type: struct k_obj_type * Pointer to the object type param func: int(* Callback to invoke on each object core of the object type param data:  Custom data passed to the callback
+- k_obj_type_walk_locked (api:k_obj_type_walk_locked:parameters#c0) :: API: k_obj_type_walk_locked Section: parameters param type: struct k_obj_type * Pointer to the object type param func: int(* Callback to invoke on each object core of the object type param data:  Custom data passed to the callback
+- k_thread_foreach_unlocked (api:k_thread_foreach_unlocked:overview#c0) :: API: k_thread_foreach_unlocked Signature: void k_thread_foreach_unlocked ( k_thread_user_cb_t user_cb, void * user_data );
+- k_obj_core (api:k_obj_core:overview#c0) :: API: k_obj_core Signature:
+
+Official documentation (full):
+Title: k_obj_type_walk_unlocked
+Signature: int k_obj_type_walk_unlocked ( struct k_obj_type * type, int(* func );
+Parameters:
+- type: struct k_obj_type * — Pointer to the object type
+- func: int(* — Callback to invoke on each object core of the object type
+- data:  — Custom data passed to the callback
+Return values:
+- : if walk is terminated by the callback; otherwise 0
+
+### Function k_obj_type_walk_locked
+Signature: int k_obj_type_walk_locked ( struct k_obj_type * type, int(* func );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- type: struct k_obj_type * — Pointer to the object type
+- func: int(* — Callback to invoke on each object core of the object type
+- data:  — Custom data passed to the callback
+Return values:
+- : if walk is terminated by the callback; otherwise 0
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_obj_type_walk_locked (api:k_obj_type_walk_locked:overview#c0) :: API: k_obj_type_walk_locked Signature: int k_obj_type_walk_locked ( struct k_obj_type * type, int(* func );
+
+Official documentation (full):
+Title: k_obj_type_walk_locked
+Signature: int k_obj_type_walk_locked ( struct k_obj_type * type, int(* func );
+Parameters:
+- type: struct k_obj_type * — Pointer to the object type
+- func: int(* — Callback to invoke on each object core of the object type
+- data:  — Custom data passed to the callback
+Return values:
+- : if walk is terminated by the callback; otherwise 0
+
+### Function k_thread_foreach_unlocked
+Signature: void k_thread_foreach_unlocked ( k_thread_user_cb_t user_cb, void * user_data );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- user_cb: k_thread_user_cb_t — Pointer to the user callback function.
+- user_data: void * — Pointer to user data.
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_thread_foreach_unlocked (api:k_thread_foreach_unlocked:overview#c0) :: API: k_thread_foreach_unlocked Signature: void k_thread_foreach_unlocked ( k_thread_user_cb_t user_cb, void * user_data );
+
+Official documentation (full):
+Title: k_thread_foreach_unlocked
+Signature: void k_thread_foreach_unlocked ( k_thread_user_cb_t user_cb, void * user_data );
+Parameters:
+- user_cb: k_thread_user_cb_t — Pointer to the user callback function.
+- user_data: void * — Pointer to user data.
+
+### Function k_obj_core
+Signature: #define K_OBJ_CORE ( kobj )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/kernel/obj_core.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_obj_core (api:k_obj_core:overview#c0) :: API: k_obj_core Signature:
+
+Official documentation (full):
+Title: K_OBJ_CORE
+Definition: #define K_OBJ_CORE ( kobj )
+Includes:
+#include <zephyr/kernel/obj_core.h>
+Details (truncated):
+(&((kobj)->obj_core)) Convert kernel object pointer into its object core pointer.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

@@ -1,0 +1,90 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_spin_unlock, z_impl_device_init, k_spin_lock, Call, Function
+
+### Function k_spin_unlock
+Signature: ALWAYS_INLINE void k_spin_unlock ( struct k_spinlock * l, k_spinlock_key_t key );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- l: struct k_spinlock * — A pointer to the spinlock to release
+- key: k_spinlock_key_t — The value returned from k_spin_lock() when this lock was acquired
+Related configs: none
+Related APIs: none
+Reference snippets:
+- Call k_sched_unlock -> k_spin_unlock (edge:k_sched_unlock->k_spin_unlock:kernel/sched.c:777#c0) :: Call: k_sched_unlock -> k_spin_unlock at kernel/sched.c:777
+- k_spin_unlock (api:k_spin_unlock:overview#c0) :: API: k_spin_unlock Signature: ALWAYS_INLINE void k_spin_unlock ( struct k_spinlock * l, k_spinlock_key_t key );
+- Call k_sched_unlock -> k_spin_lock (edge:k_sched_unlock->k_spin_lock:kernel/sched.c:777#c0) :: Call: k_sched_unlock -> k_spin_lock at kernel/sched.c:777
+- Call z_impl_k_mutex_unlock -> k_spin_unlock (edge:z_impl_k_mutex_unlock->k_spin_unlock:kernel/mutex.c:276#c0) :: Call: z_impl_k_mutex_unlock -> k_spin_unlock at kernel/mutex.c:276
+- Function k_sched_unlock (func:k_sched_unlock:kernel/sched.c#c0) :: FUNC k_sched_unlock void(void) file kernel/sched.c:775-791 
+- k_sched_unlock (api:k_sched_unlock:overview#c0) :: API: k_sched_unlock Signature: void k_sched_unlock ( void );
+
+Official documentation (full):
+Title: k_spin_unlock
+Signature: ALWAYS_INLINE void k_spin_unlock ( struct k_spinlock * l, k_spinlock_key_t key );
+Parameters:
+- l: struct k_spinlock * — A pointer to the spinlock to release
+- key: k_spinlock_key_t — The value returned from k_spin_lock() when this lock was acquired
+
+### Function z_impl_device_init
+Signature: int(device*)
+Location: kernel/device.c:76-83
+Cyclomatic: -1 Lines: -1
+Includes: errno.h, stddef.h, string.h, zephyr/device.h, zephyr/internal/syscall_handler.h, zephyr/pm/device_runtime.h, zephyr/sys/atomic.h, zephyr/sys/iterable_sections.h, zephyr/sys/kobject.h, zephyr/syscalls/device_deinit_mrsh.c, zephyr/syscalls/device_get_binding_mrsh.c, zephyr/syscalls/device_get_by_dt_nodelabel_mrsh.c, zephyr/syscalls/device_init_mrsh.c, zephyr/syscalls/device_is_ready_mrsh.c, zephyr/toolchain.h
+Outgoing calls summary: <operator>.indirectFieldAccess(), <operator>.minus(), kernel/include/errno.h:EALREADY:int(0)(), do_device_init()
+Incoming callers count: 0
+
+### Function k_spin_lock
+Signature: ALWAYS_INLINE k_spinlock_key_t k_spin_lock ( struct k_spinlock * l );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- l: struct k_spinlock * — A pointer to the spinlock to lock
+Return values:
+- : A key value that must be passed to k_spin_unlock() when the lock is released.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_spin_lock
+Signature: ALWAYS_INLINE k_spinlock_key_t k_spin_lock ( struct k_spinlock * l );
+Parameters:
+- l: struct k_spinlock * — A pointer to the spinlock to lock
+Return values:
+- : A key value that must be passed to k_spin_unlock() when the lock is released.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

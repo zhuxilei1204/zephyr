@@ -1,0 +1,19 @@
+{
+  "overall_status": "PASS",
+  "stage": "run",
+  "classification": "ok",
+  "subtype": null,
+  "details": {
+    "run": {
+      "status": "PASS",
+      "stage": "run",
+      "command": "/home/zwz/zephyr-venv/bin/west build -t run",
+      "returncode": -9,
+      "timeout": false,
+      "marker_hit": true,
+      "stdout_tail": "-- west build: running target run\n[0/1] To exit from QEMU enter: 'CTRL+a, x'[QEMU] CPU: cortex-m3\n*** Booting Zephyr OS build b31c3c1684e7 ***\r\n[TEST_CASE_COMPLETED]",
+      "stderr_tail": "qemu-system-arm: warning: nic lan9118.0 has no peer\n",
+      "log_path": "/home/zwz/rtos_fuzz_agent/src/generated_tests/fuzz/20260105_211844_k_thread_state_str_gemini-3-flash-preview/run.log"
+    }
+  }
+}

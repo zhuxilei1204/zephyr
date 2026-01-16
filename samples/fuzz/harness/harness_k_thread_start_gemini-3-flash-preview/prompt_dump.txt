@@ -1,0 +1,89 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_thread_start, z_impl_ivshmem_get_vectors, DT_N_S_soc_S_gpio_40011000_FOREACH_CHILD, z_impl_k_usleep, kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_FUNC_ENTER:ANY(3)
+
+### Function k_thread_start
+Signature: void k_thread_start ( k_tid_t thread );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- thread: k_tid_t — thread to start
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_thread (api:k_thread:overview#c0) :: API: k_thread Signature:
+- k_thread_start (api:k_thread_start:overview#c0) :: API: k_thread_start Signature: void k_thread_start ( k_tid_t thread );
+- K_THREAD_DEFINE (api:K_THREAD_DEFINE:overview#c0) :: API: K_THREAD_DEFINE Signature:
+- Call k_work_queue_start -> k_thread_start (edge:k_work_queue_start->k_thread_start:kernel/work.c:860#c0) :: Call: k_work_queue_start -> k_thread_start at kernel/work.c:860
+- K_KERNEL_THREAD_DEFINE (api:K_KERNEL_THREAD_DEFINE:overview#c0) :: API: K_KERNEL_THREAD_DEFINE Signature:
+- Call k_work_queue_start -> k_thread_create (edge:k_work_queue_start->k_thread_create:kernel/work.c:840#c0) :: Call: k_work_queue_start -> k_thread_create at kernel/work.c:840
+
+Official documentation (full):
+Title: k_thread_start
+Signature: void k_thread_start ( k_tid_t thread );
+Parameters:
+- thread: k_tid_t — thread to start
+
+### Function z_impl_ivshmem_get_vectors
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function DT_N_S_soc_S_gpio_40011000_FOREACH_CHILD
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+### Function z_impl_k_usleep
+Signature: int32_t(int32_t)
+Location: kernel/sched.c:1164-1178
+Cyclomatic: -1 Lines: -1
+Includes: ipi.h, kernel_arch_func.h, kernel_internal.h, ksched.h, kswap.h, kthread.h, priority_q.h, stdbool.h, wait_q.h, zephyr/drivers/timer/system_timer.h, zephyr/internal/syscall_handler.h, zephyr/kernel.h, zephyr/logging/log.h, zephyr/spinlock.h, zephyr/sys/atomic.h, zephyr/sys/math_extras.h, zephyr/sys/util.h, zephyr/syscalls/k_reschedule_mrsh.c, zephyr/syscalls/k_sched_current_thread_query_mrsh.c, zephyr/syscalls/k_sleep_mrsh.c, zephyr/syscalls/k_thread_abort_mrsh.c, zephyr/syscalls/k_thread_absolute_deadline_set_mrsh.c, zephyr/syscalls/k_thread_deadline_set_mrsh.c, zephyr/syscalls/k_thread_join_mrsh.c, zephyr/syscalls/k_thread_priority_set_mrsh.c, zephyr/syscalls/k_thread_resume_mrsh.c, zephyr/syscalls/k_thread_suspend_mrsh.c, zephyr/syscalls/k_usleep_mrsh.c, zephyr/syscalls/k_wakeup_mrsh.c, zephyr/syscalls/k_yield_mrsh.c, zephyr/timing/timing.h
+Outgoing calls summary: kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_FUNC_ENTER:ANY(3)(), <operator>.assignment(), kernel/include/zephyr/sys/time_units.h:k_us_to_ticks_ceil64:ANY(1)(), <operator>.conditional(), <operator>.equals(), <operator>.cast(), <operator>.logicalAnd(), <operator>.greaterThan()
+Incoming callers count: 0
+
+### Function kernel/include/zephyr/tracing/tracing_macros.h:SYS_PORT_TRACING_FUNC_ENTER:ANY(3)
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

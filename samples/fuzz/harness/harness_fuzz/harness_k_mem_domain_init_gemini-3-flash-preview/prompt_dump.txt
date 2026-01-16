@@ -1,0 +1,165 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: k_mem_domain_init, k_mem_domain_add_partition, k_mem_domain_add_thread, k_mem_domain, K_APP_DMEM
+
+### Function k_mem_domain_init
+Signature: int k_mem_domain_init ( struct k_mem_domain * domain, uint8_t num_parts, struct k_mem_partition * parts[] );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- domain: struct k_mem_domain * — The memory domain to be initialized.
+- num_parts: uint8_t — The number of array items of "parts" parameter.
+- parts: struct k_mem_partition * — An array of pointers to the memory partitions. Can be NULL if num_parts is zero.
+Return values:
+- : if successful
+- : if invalid parameters supplied
+- : if insufficient memory
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_mem_domain_init (api:k_mem_domain_init:overview#c0) :: API: k_mem_domain_init Signature: int k_mem_domain_init ( struct k_mem_domain * domain, uint8_t num_parts, struct k_mem_partition * parts[] );
+- k_mem_domain (api:k_mem_domain:overview#c0) :: API: k_mem_domain Signature:
+- k_mem_domain_init (api:k_mem_domain_init:parameters#c0) :: API: k_mem_domain_init Section: parameters param domain: struct k_mem_domain * The memory domain to be initialized. param num_parts: uint8_t The number of array items of "parts" parameter. param parts: struct k_mem_partition * An array of pointers to the memory partitions. Can be NULL if num_parts is zero.
+- k_mem_domain_add_partition (api:k_mem_domain_add_partition:overview#c0) :: API: k_mem_domain_add_partition Signature: int k_mem_domain_add_partition ( struct k_mem_domain * domain, struct k_mem_partition * part );
+- k_mem_domain_add_thread (api:k_mem_domain_add_thread:overview#c0) :: API: k_mem_domain_add_thread Signature: int k_mem_domain_add_thread ( struct k_mem_domain * domain, k_tid_t thread );
+- K_APP_DMEM (api:K_APP_DMEM:overview#c0) :: API: K_APP_DMEM Signature:
+
+Official documentation (full):
+Title: k_mem_domain_init
+Signature: int k_mem_domain_init ( struct k_mem_domain * domain, uint8_t num_parts, struct k_mem_partition * parts[] );
+Parameters:
+- domain: struct k_mem_domain * — The memory domain to be initialized.
+- num_parts: uint8_t — The number of array items of "parts" parameter.
+- parts: struct k_mem_partition * — An array of pointers to the memory partitions. Can be NULL if num_parts is zero.
+Return values:
+- : if successful
+- : if invalid parameters supplied
+- : if insufficient memory
+
+### Function k_mem_domain_add_partition
+Signature: int k_mem_domain_add_partition ( struct k_mem_domain * domain, struct k_mem_partition * part );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- domain: struct k_mem_domain * — The memory domain to be added a memory partition.
+- part: struct k_mem_partition * — The memory partition to be added
+Return values:
+- : if successful
+- : if invalid parameters supplied
+- : if no free partition slots available
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_mem_domain_add_partition
+Signature: int k_mem_domain_add_partition ( struct k_mem_domain * domain, struct k_mem_partition * part );
+Parameters:
+- domain: struct k_mem_domain * — The memory domain to be added a memory partition.
+- part: struct k_mem_partition * — The memory partition to be added
+Return values:
+- : if successful
+- : if invalid parameters supplied
+- : if no free partition slots available
+
+### Function k_mem_domain_add_thread
+Signature: int k_mem_domain_add_thread ( struct k_mem_domain * domain, k_tid_t thread );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- domain: struct k_mem_domain * — The memory domain that the thread is going to be added into.
+- thread: k_tid_t — ID of thread going to be added into the memory domain.
+Return values:
+- : 0 if successful, fails otherwise.
+Related configs: none
+Related APIs: none
+
+Official documentation (full):
+Title: k_mem_domain_add_thread
+Signature: int k_mem_domain_add_thread ( struct k_mem_domain * domain, k_tid_t thread );
+Parameters:
+- domain: struct k_mem_domain * — The memory domain that the thread is going to be added into.
+- thread: k_tid_t — ID of thread going to be added into the memory domain.
+Return values:
+- : 0 if successful, fails otherwise.
+
+### Function k_mem_domain
+Signature: 
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/app_memory/mem_domain.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- k_mem_domain (api:k_mem_domain:overview#c0) :: API: k_mem_domain Signature:
+
+Official documentation (full):
+Title: k_mem_domain
+Includes:
+#include <zephyr/app_memory/mem_domain.h>
+
+### Function K_APP_DMEM
+Signature: #define K_APP_DMEM ( id )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/app_memory/app_memdomain.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- K_APP_DMEM (api:K_APP_DMEM:overview#c0) :: API: K_APP_DMEM Signature:
+
+Official documentation (full):
+Title: K_APP_DMEM
+Definition: #define K_APP_DMEM ( id )
+Includes:
+#include <zephyr/app_memory/app_memdomain.h>
+Details (truncated):
+Z_GENERIC_SECTION(K_APP_DMEM_SECTION(id))
+Place data in a partition's data section.
+
+Globals tagged with this will end up in the data section for the specified memory partition. This data should be initialized to some desired value.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.

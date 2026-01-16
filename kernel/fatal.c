@@ -15,7 +15,11 @@
 #include <zephyr/fatal.h>
 #include <zephyr/debug/coredump.h>
 LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);	//声明了日志模块，使用内核配置的日志级别
-#define MAGIC_CRASH_ADDR  ((volatile unsigned int *)0x20000004)
+/*
+ * Keep this OUTSIDE the fuzz input buffer region.
+ * The LibAFL runner pads and writes a full MAX_INPUT_SIZE chunk to FUZZ_INPUT.
+ */
+#define MAGIC_CRASH_ADDR  ((volatile unsigned int *)0x20001004)
 #define MAGIC_CRASH_VAL   0xDEADBEEF
 
 FUNC_NORETURN __weak void arch_system_halt(unsigned int reason)
@@ -30,7 +34,7 @@ FUNC_NORETURN __weak void arch_system_halt(unsigned int reason)
         : 
         : "memory"
     );
-	//*MAGIC_CRASH_ADDR = MAGIC_CRASH_VAL;
+	// *MAGIC_CRASH_ADDR = MAGIC_CRASH_VAL;
     
     // 死循环
     while(1);

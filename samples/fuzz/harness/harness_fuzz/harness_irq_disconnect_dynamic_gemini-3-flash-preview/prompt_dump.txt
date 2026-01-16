@@ -1,0 +1,159 @@
+==== SYSTEM PROMPT ====
+You are a Zephyr kernel and driver-level testing expert. Generate high-quality, compilable, and runnable fuzzing test cases for the target API. Ensure task lifecycle completeness, correct synchronization usage, memory safety, and minimal viable initialization. The harness template already provides a fixed skeleton: it reads fuzz input via FR_* helpers from the global FUZZ_INPUT array, runs test logic inside a bounded for-loop, then prints [TEST_CASE_COMPLETED] and triggers a BREAKPOINT. Your job is ONLY to generate per-test-case helper_functions and test_logic bodies that plug into this skeleton. Target environment: Zephyr RTOS (mps2/an385, QEMU). Single-threaded execution.
+Constraints:
+1. Concurrency: **NO BLOCKING CALLS** on IPC/Sync objects (Pipe, MsgQ, Sem). This causes DEADLOCK in single-threaded tests. **ALWAYS use K_NO_WAIT** for reads/takes.
+2. APIs: Prefer public `k_*` APIs. Avoid internal `z_*` symbols.
+3. Memory: Static allocation preferred. No leaks.
+4. Flow: No infinite loops. `test_logic` runs inside a bounded loop.
+Input Policy: Use ONLY provided `FR_*` helpers to read from global `FUZZ_INPUT`. Deterministic mapping only (no rand/time).
+Helper Signatures:
+FR_Reader FR_init(const unsigned char* buf, size_t n); // Usage: FR_init(FUZZ_INPUT, MAX_FUZZ_INPUT_SIZE)
+FR_next_range(FR_Reader* r, uint32_t min, uint32_t max) -> uint32_t;
+FR_next_bytes(FR_Reader* r, unsigned char* out, size_t n) -> size_t;
+FR_next_string(FR_Reader* r, size_t max_len) -> const char*;
+Use modulo/clamping for valid ranges. `test_logic` runs in a bounded loop. NO infinite loops.
+Reader Discipline: Init `FR_Reader` ONCE outside loop. Check `FR_remaining`.
+
+==== USER PROMPT ====
+Goal: Generate 1 fuzzing test case (JSON array) for the functions below and their key related APIs. Each item must include: name, description, api_category, helper_functions, test_logic.
+Focus functions: irq_disconnect_dynamic, irq_connect_dynamic, IRQ_DIRECT_CONNECT, IRQ_CONNECT, Function
+
+### Function irq_disconnect_dynamic
+Signature: int irq_disconnect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- irq: unsigned int — IRQ line number
+- priority: unsigned int — Interrupt priority
+- routine: void(* — Interrupt service routine
+- parameter:  — ISR parameter
+- flags:  — Arch-specific IRQ configuration flags
+Return values:
+- : 0 in case of success, negative value otherwise
+Related configs: none
+Related APIs: none
+Reference snippets:
+- irq_disconnect_dynamic (api:irq_disconnect_dynamic:overview#c0) :: API: irq_disconnect_dynamic Signature: int irq_disconnect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+- irq_disconnect_dynamic (api:irq_disconnect_dynamic:parameters#c0) :: API: irq_disconnect_dynamic Section: parameters param irq: unsigned int IRQ line number param priority: unsigned int Interrupt priority param routine: void(* Interrupt service routine param parameter:  ISR parameter param flags:  Arch-specific IRQ configuration flags
+- irq_connect_dynamic (api:irq_connect_dynamic:overview#c0) :: API: irq_connect_dynamic Signature: int irq_connect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+- IRQ_DIRECT_CONNECT (api:IRQ_DIRECT_CONNECT:overview#c0) :: API: IRQ_DIRECT_CONNECT Signature:
+- IRQ_CONNECT (api:IRQ_CONNECT:overview#c0) :: API: IRQ_CONNECT Signature:
+- Function <global> (func:<global>:arch/arm/core/cortex_m/irq_manage.c#c0) :: FUNC <global>  file arch/arm/core/cortex_m/irq_manage.c:1-281 
+
+Official documentation (full):
+Title: irq_disconnect_dynamic
+Signature: int irq_disconnect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+Parameters:
+- irq: unsigned int — IRQ line number
+- priority: unsigned int — Interrupt priority
+- routine: void(* — Interrupt service routine
+- parameter:  — ISR parameter
+- flags:  — Arch-specific IRQ configuration flags
+Return values:
+- : 0 in case of success, negative value otherwise
+
+### Function irq_connect_dynamic
+Signature: int irq_connect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+Location: 
+Cyclomatic: None Lines: None
+Includes: none
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Parameters:
+- irq: unsigned int — IRQ line number
+- priority: unsigned int — Interrupt priority
+- routine: void(* — Interrupt service routine
+- parameter:  — ISR parameter
+- flags:  — Arch-specific IRQ configuration flags
+Return values:
+- : The vector assigned to this interrupt
+Related configs: none
+Related APIs: none
+Reference snippets:
+- irq_connect_dynamic (api:irq_connect_dynamic:overview#c0) :: API: irq_connect_dynamic Signature: int irq_connect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+- IRQ_CONNECT (api:IRQ_CONNECT:overview#c0) :: API: IRQ_CONNECT Signature:
+- IRQ_DIRECT_CONNECT (api:IRQ_DIRECT_CONNECT:overview#c0) :: API: IRQ_DIRECT_CONNECT Signature:
+- irq_connect_dynamic (api:irq_connect_dynamic:parameters#c0) :: API: irq_connect_dynamic Section: parameters param irq: unsigned int IRQ line number param priority: unsigned int Interrupt priority param routine: void(* Interrupt service routine param parameter:  ISR parameter param flags:  Arch-specific IRQ configuration flags
+- irq_disconnect_dynamic (api:irq_disconnect_dynamic:overview#c0) :: API: irq_disconnect_dynamic Signature: int irq_disconnect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+- Call gpio_cmsdk_port_2_config_func -> ARCH_IRQ_CONNECT (edge:gpio_cmsdk_port_2_config_func->ARCH_IRQ_CONNECT:drivers/gpio/gpio_cmsdk_ahb.c:317#c0) :: Call: gpio_cmsdk_port_2_config_func -> ARCH_IRQ_CONNECT at drivers/gpio/gpio_cmsdk_ahb.c:317
+
+Official documentation (full):
+Title: irq_connect_dynamic
+Signature: int irq_connect_dynamic ( unsigned int irq, unsigned int priority, void(* routine );
+Parameters:
+- irq: unsigned int — IRQ line number
+- priority: unsigned int — Interrupt priority
+- routine: void(* — Interrupt service routine
+- parameter:  — ISR parameter
+- flags:  — Arch-specific IRQ configuration flags
+Return values:
+- : The vector assigned to this interrupt
+
+### Function IRQ_DIRECT_CONNECT
+Signature: #define IRQ_DIRECT_CONNECT ( irq_p, priority_p, isr_p, flags_p )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/irq.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- IRQ_DIRECT_CONNECT (api:IRQ_DIRECT_CONNECT:overview#c0) :: API: IRQ_DIRECT_CONNECT Signature:
+
+Official documentation (full):
+Title: IRQ_DIRECT_CONNECT
+Definition: #define IRQ_DIRECT_CONNECT ( irq_p, priority_p, isr_p, flags_p )
+Includes:
+#include <zephyr/irq.h>
+Details (truncated):
+ARCH_IRQ_DIRECT_CONNECT(irq_p, priority_p, isr_p, flags_p) Initialize a 'direct' interrupt handler.
+This routine initializes an interrupt handler for an IRQ. The IRQ must be subsequently enabled via irq_enable() before the interrupt handler begins servicing interrupts.
+These ISRs are designed for performance-critical interrupt handling and do not go through common interrupt handling code. They must be implemented in such a way that it is safe to put them directly in the vector table. For ISRs written in C, The ISR_DIRECT_DECLARE() macro will do this automatically. For ISRs written in assembly it is entirely up to the developer to ensure that the right steps are taken.
+This type of interrupt currently has a few limitations compared to normal Zephyr interrupts:
+No parameters are passed to the ISR.
+No stack switch is done, the ISR will run on the interrupted context's stack, unless the architecture automatically does the stack switch in HW.
+Interrupt locking state is unchanged from how the HW sets it when the ISR runs. On arches that enter ISRs with interrupts locked, they will remain locked.
+Scheduling decisions are now optional, controlled by the return value of ISRs implemented with the ISR_DIRECT_DECLARE() macro The call into the OS to exit power management idle state is now optional. Normal interrupts always do this before the ISR is run, but when it runs is now controlled by the placement of a ISR_DIRECT_PM() macro, or omitted entirely.
+Warning Although this routine is invoked at run-time, all of its arguments must be computable by the compiler at build time.
+
+### Function IRQ_CONNECT
+Signature: #define IRQ_CONNECT ( irq_p, priority_p, isr_p, isr_param_p, flags_p )
+Location: 
+Cyclomatic: None Lines: None
+Includes: #include <zephyr/irq.h>
+Outgoing calls summary: none
+Incoming callers count: 0
+Official docs (summary):
+Related configs: none
+Related APIs: none
+Reference snippets:
+- IRQ_CONNECT (api:IRQ_CONNECT:overview#c0) :: API: IRQ_CONNECT Signature:
+
+Official documentation (full):
+Title: IRQ_CONNECT
+Definition: #define IRQ_CONNECT ( irq_p, priority_p, isr_p, isr_param_p, flags_p )
+Includes:
+#include <zephyr/irq.h>
+Details (truncated):
+ARCH_IRQ_CONNECT(irq_p, priority_p, isr_p, isr_param_p, flags_p) Initialize an interrupt handler.
+This routine initializes an interrupt handler for an IRQ. The IRQ must be subsequently enabled before the interrupt handler begins servicing interrupts.
+Warning Although this routine is invoked at run-time, all of its arguments must be computable by the compiler at build time.
+
+Generation requirements (Zephyr):
+1) Output strict JSON array.
+2) `test_logic` must be non-blocking (use `K_NO_WAIT` to prevent deadlock).
+3) Derive parameters from `FUZZ_INPUT` using `FR_*` helpers.
+4) Use `__ASSERT` for checks. Clean up on failure.
+5) Choose suitable `api_category`.9) JSON formatting MUST be valid: use double quotes, escape all newline characters as \n, and do NOT include code fences/backticks. No trailing commas.
+
+Forbidden/limitations (Zephyr):
+- Do NOT call Zephyr internal/private symbols (e.g., names starting with z_ or arch_).
+- Do NOT include random(), srand(), time(), or platform-specific syscalls. All variability from FUZZ_INPUT.
+- Do NOT define any symbols with FR_ prefix; these are reserved by the template.
